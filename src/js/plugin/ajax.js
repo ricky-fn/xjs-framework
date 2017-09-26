@@ -1,7 +1,6 @@
-define('ajax', ['engine', 'zepto'], function (xjs, $) {
+define('ajax', ['zepto'], function ($) {
     var cache = {};
-
-    xjs.load = function (data) {
+    var load = function (data) {
         var param = _.extend({
             skipError: false, //将错误信息交给回调执行
             offAnimate: false, //关闭动画效果
@@ -45,4 +44,6 @@ define('ajax', ['engine', 'zepto'], function (xjs, $) {
             alert(error);
         });
     };
+
+    return load;
 });
