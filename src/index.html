@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <title>xjs-framework</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="yes" name="apple-touch-fullscreen">
+    <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no,email=no" name="format-detection">
+    <meta content="fullscreen=yes,preventMove=no" name="ML-Config">
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-title" content="XBET">
+    <link rel="apple-touch-icon" href="assets/images/icon.png"/>
+    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <link rel="bookmark" href="favicon.ico"/>
+    <script data-main="assets/js/main.js" src="assets/js/lib/require.js"></script>
+    <script>
+        (function (doc, win) {
+
+            var docEl = doc.documentElement;
+            var stylePush = document.createElement('style');
+            var resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize';
+            var styles = '';
+            stylePush.id = 'remSet';
+            document.head.appendChild(stylePush);
+
+            // 如果是UC浏览器禁止全局动画效果
+            // if (navigator.userAgent.indexOf('UCBrowser') > 0) {
+            //   styles = '* {-webkit-transition: none !important; transition: none !important;}\n';
+            // }
+
+            // 计算font-size实现自动缩放
+            var recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (!clientWidth) return;
+                var fontSize = (clientWidth / 700 * 40).toFixed(1);
+                stylePush.innerHTML = styles + "html { font-size: " + (fontSize > 25 ? 25 : fontSize) + 'px}';
+            };
+
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window);
+    </script>
+</head>
+<body>
+<div class="app-view scroll-container" id="appview"></div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+// ====================================================
+// 全局变量 函数 mixin定义
+$tipColor:            #b8c4ce;
+$titleColor:          #444;
+$textColor:           #666;
+$importantColor:      #f5572d;
+$numberColor:         #a7bd06;
+$linkColor:           #08a1e1;
+
+$baseSize:            40px; //基准像素
+
+// ====================================================
+// 根据项目需求重置部分全局样式
+// 全局函数
+
+@function fitPx($px) {
+  @return $px / $baseSize * 1rem;
+}
+
+// =====================================================
+
+html, body {
+  font: normal 14px "Microsoft Yahei", sans-serif;
+  background: #fff;
+  height: 100%;
+}
+
+::-webkit-input-placeholder { 
+  color: $tipColor;
+  font-size: 16px;
+  letter-spacing: normal;
+  font-weight: normal;
+}
+
+.clearline {
+  font-size: 0;
+}

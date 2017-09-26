@@ -1,0 +1,17 @@
+@import "reset";
+@import "common";
+@import "animation";
+
+.app-view {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-content {
+  background: #000;
+}
+
+// 首页
+@import 'Page.Home';
