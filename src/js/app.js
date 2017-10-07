@@ -41,6 +41,8 @@ require(['zepto', 'underscore', 'engine', 'widget', 'router', 'ajax', 'deferred'
 
     // todo 挂载工具库
     xjs.tool = tool;
+    // todo 挂载ajax模块
+    xjs.load = ajax;
 
     $(function () {
         xjs.router.start();
