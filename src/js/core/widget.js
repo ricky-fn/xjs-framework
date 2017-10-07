@@ -1,21 +1,35 @@
 define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
     var declare = xjs.declare;
 
+    /**
+     * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义,每个函数都可以通过this._super()的方式访问到父级的函数
+     * @module widget
+     * @example
+     * xjs.declare('Page.***', basClass, prop);
+     */
     return declare('ui.Widget', {
+        /**
+         * Page类的初始化函数，同时控制渲染事件的执行流程，此方法不可以被重写。
+         * @memberOf module:widget
+         * @name init
+         * @param dom 基类渲染的Dom节点
+         */
         init: function (dom) {
             this.domNode = this.domNode || (this.$domNode = $(dom)).get(0);
 
             this.render();
 
-            $.when(this.syncGetData()).done(function () {
-                this.buildRender();
-                if (!this.finalStep) {
-                    xjs.triggerAnnounceEvent('widgetReady', this.routeEventName);
-                } else {
-                    xjs.triggerAnnounceEvent('allWidgetReady', this.routeEventName);
-                }
-                this.startup && this.startup();
-            }.bind(this));
+            $.when(this.syncGetData()).done(
+                xjs.hitch(this, function () {
+                    this.buildRender();
+                    if (!this.finalStep) {
+                        xjs.triggerAnnounceEvent('widgetReady', this.routeEventName);
+                    } else {
+                        xjs.triggerAnnounceEvent('allWidgetReady', this.routeEventName);
+                    }
+                    this.startup && this.startup();
+                })
+            );
             return this;
         },
         render: function () {
@@ -23,13 +37,42 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             this.id = this.domNode.id;
         },
         syncGetData: function () {
+            /**
+             * request函数用于设置需要预先请求的数据队列，所有队列请求成功后才会执行后面的流程。
+             * 对zepto的ajax模块进行了二次封装，所有参数和$.ajax一致。ajax返回的数据将会根据app的名字挂载到this.data下
+             * @memberOf module:widget
+             * @name request
+             * @example
+             * xjs.declare('Page.***', basClass, {
+             *      request: function() {
+             *          return {
+             *              app: 'name', //在request之后的函数中可以用this.data.name获取到数据
+             *              url: 'example.do',
+             *              data: {}
+             *          }
+             *      }
+             * })
+             * //或者
+             * xjs.declare('Page.***', basClass, {
+             *      request: function() {
+             *          return [{
+             *              app: 'app1', //在request之后的函数中可以用this.data.name获取到数据
+             *              url: 'example.do',
+             *              data: {}
+             *          }, {
+             *              app: 'app2',
+             *              url: 'test.do'
+             *          }]
+             *      }
+             * })
+             */
             var o = this.request ? this.request() : 0, dtd = $.Deferred();
             if (!o) return dtd.resolve();
             if (o.then) {
-                o.done(waitRequest.bind(this));
+                o.done(xjs.hitch(this, waitRequest));
                 return dtd.promise();
             }
-            waitRequest.bind(this, o)();
+            xjs.hitch(this, waitRequest)(o);
             function waitRequest(param) {
                 var param = param instanceof Array ? param : [param], i, name, count = 0;
                 this.data = this.data || {};
@@ -37,16 +80,29 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
                     name = param[i].app;
                     if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
                     delete param[i].app;
-                    xjs.load(param[i]).then(function (reslute, key) {
-                        this.data[key] = reslute;
-                        count += 1;
-                        if (count == param.length) dtd.resolve();
-                    }.bind(this, name));
+                    xjs.load(param[i]).then(
+                        xjs.hitch(this, function (reslute, key) {
+                            this.data[key] = reslute;
+                            count += 1;
+                            if (count == param.length) dtd.resolve();
+                        }, name)
+                    );
                 }
             }
 
             return dtd.promise();
         },
+        /**
+         * 模板渲染流程，将会把this对象作为数据采集对象传入模板。并扫描模板里的自定义锚点后映射到this对象上<br>
+         * [data-xjs-element] 将挂载到this对象上，并通过$ + name 用以区分普通dom对象和jquery对象
+         * @example
+         * <div data-xjs-element="divNode"></div>
+         * //this.divNode 获取原始dom对象
+         * //this.$divNode 获取jquery对象
+         * @memberOf module:widget
+         * @name buildRender
+         * @see {widget:request}
+         */
         buildRender: function () {
             this.$domNode.addClass(this.baseClass);
             if (this.templateString) {
@@ -89,7 +145,7 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             f = n.replace(/\s/g, "").split(';').slice(0, -1);
             for (j = 0; j < f.length; j++) {
                 var event = f[j].split(':');
-                dom.on(event[0], this[event[1]].bind(this));
+                dom.on(event[0], xjs.hitch(this, this[event[1]]));
             }
         }
         return true;

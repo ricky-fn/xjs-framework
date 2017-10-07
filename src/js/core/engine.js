@@ -5,6 +5,11 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
     var _class = {};
     var _instances = xjs._instances = {};
 
+    /**
+     * @method
+     * @desc 销毁页面Controler
+     * @param {string} id 实例化类的id
+     */
     xjs.destroyView = function (id) {
         if (!Object.getOwnPropertyNames(_instances).length) return;
 
