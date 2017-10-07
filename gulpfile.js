@@ -246,8 +246,15 @@ gulp.task('server', function() {
     gulp.watch(src + 'images/**/*.{png,jpg,gif}', function() {
         sequence('imagemin', reload);
     });
-    gulp.watch([src + 'js/**/*.js'], function() {
+    gulp.watch([src + 'js/**/*.js', '!' + src + 'js/plugin/*.js', '!' + src + 'js/lib/*.js'], function() {
         sequence(['optimizeJS'], reload);
+    });
+    gulp.watch([src + 'js/plugin/*.js', src + 'js/lib/*.js'], function() {
+        return gulp.src([src + 'js/plugin/*.js', src + 'js/lib/*.js'])
+            .pipe(gulp.dest(dest))
+            .on('end', function () {
+                reload();
+            });
     });
     gulp.watch(src + 'pages/**/*.html', function() {
         sequence('optimizeJS', reload);
