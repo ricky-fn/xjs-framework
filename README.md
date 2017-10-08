@@ -40,7 +40,10 @@ gulp release //发布线上版本
 ```
 
 ### API文档：
-正在补充..
+请在当前项目路径下，在命令行里执行以下命令去获取API文档，api文档将会被放在docs/目录下    
+```javascript
+gulp apidoc
+```
 
 ### 任何疑问：
 QQ: 3427495853
