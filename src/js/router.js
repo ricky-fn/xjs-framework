@@ -1,7 +1,18 @@
 define('router', ['engine', 'route'], function (xjs, Route) {
+    /**
+     * 路由模块
+     * @namespace xjs/router
+     * @type {module#Router}
+     * @see module#Router
+     */
     xjs.router = new Route();
 
-    // 使用正则表达式时类似\w的要改成\\w
+    /**
+     * 路由映射表定义
+     * @method setup
+     * @memberOf xjs/router
+     * @see module:Router#setup
+     */
     xjs.router.setup({
         '#home/': 'Home'
     }, {
@@ -9,6 +20,12 @@ define('router', ['engine', 'route'], function (xjs, Route) {
         fail: function () {}
     });
 
+    /**
+     * 路由回调定义
+     * @method define
+     * @memberOf xjs/router
+     * @see module:Router#define
+     */
     xjs.router.define('Home', function () {
         xjs.createView('Page.Home', {finalStep: true})
     });

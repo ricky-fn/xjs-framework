@@ -2,16 +2,19 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
     var declare = xjs.declare;
 
     /**
-     * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义,每个函数都可以通过this._super()的方式访问到父级的函数
-     * @module widget
-     * @example
-     * xjs.declare('Page.***', basClass, prop);
+     * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义<br>
+     * 所有page类通过[xjs.declare]{@lends xjs#declare}申明
+     * 执行的顺序按照:<br>
+     * init-->request-->syncGetData-->buildRender-->startup-->onExit
+     * @exports widget
+     * @mixin
      */
     return declare('ui.Widget', {
         /**
          * Page类的初始化函数，同时控制渲染事件的执行流程，此方法不可以被重写。
-         * @memberOf module:widget
-         * @name init
+         * @memberOf widget
+         * @method init
+         * @instance
          * @param dom 基类渲染的Dom节点
          */
         init: function (dom) {
@@ -27,12 +30,24 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
                     } else {
                         xjs.triggerAnnounceEvent('allWidgetReady', this.routeEventName);
                     }
+                    /**
+                     * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
+                     * @memberOf widget
+                     * @method startup
+                     */
                     this.startup && this.startup();
                 })
             );
             return this;
         },
         render: function () {
+            /**
+             * 定义Page的标题
+             *
+             * @type {string}
+             * @memberOf widget
+             * @name title
+             */
             document.title = this.title || document.title;
             this.id = this.domNode.id;
         },
@@ -40,31 +55,28 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             /**
              * request函数用于设置需要预先请求的数据队列，所有队列请求成功后才会执行后面的流程。
              * 对zepto的ajax模块进行了二次封装，所有参数和$.ajax一致。ajax返回的数据将会根据app的名字挂载到this.data下
-             * @memberOf module:widget
-             * @name request
+             * @memberOf widget
+             * @method request
+             * @instance
              * @example
-             * xjs.declare('Page.***', basClass, {
-             *      request: function() {
-             *          return {
-             *              app: 'name', //在request之后的函数中可以用this.data.name获取到数据
-             *              url: 'example.do',
-             *              data: {}
-             *          }
-             *      }
-             * })
+             * request: function() {
+             *     return {
+             *         app: 'name', //在request之后的函数中可以用this.data.name获取到数据
+             *         url: 'example.do',
+             *         data: {}
+             *     }
+             * }
              * //或者
-             * xjs.declare('Page.***', basClass, {
-             *      request: function() {
-             *          return [{
-             *              app: 'app1', //在request之后的函数中可以用this.data.name获取到数据
-             *              url: 'example.do',
-             *              data: {}
-             *          }, {
-             *              app: 'app2',
-             *              url: 'test.do'
-             *          }]
-             *      }
-             * })
+             * request: function() {
+             *     return [{
+             *         app: 'app1', //在request之后的函数中可以用this.data.name获取到数据
+             *         url: 'example.do',
+             *         data: {}
+             *     }, {
+             *         app: 'app2',
+             *         url: 'test.do'
+             *     }]
+             * }
              */
             var o = this.request ? this.request() : 0, dtd = $.Deferred();
             if (!o) return dtd.resolve();
@@ -99,9 +111,10 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
          * <div data-xjs-element="divNode"></div>
          * //this.divNode 获取原始dom对象
          * //this.$divNode 获取jquery对象
-         * @memberOf module:widget
-         * @name buildRender
-         * @see {widget:request}
+         * @memberOf widget
+         * @method buildRender
+         * @instance
+         * @see {widget#request}
          */
         buildRender: function () {
             this.$domNode.addClass(this.baseClass);
@@ -110,6 +123,13 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             }
             __createNode.call(this) && __createEvent.call(this);
         },
+        /**
+         * Page的退出事件，在路由切换被触发时调用，如果有添加事件监听需要自行注销，应该写在这个事件里，
+         * 如果你复写了这个函数，别忘了在function末尾调用this._super()
+         * @memberOf widget
+         * @method onExit
+         * @instance
+         */
         onExit: function () {
             this.$domNode.off().remove();
         }

@@ -1,4 +1,8 @@
 define('engine', ['zepto', 'underscore'], function ($, _) {
+    /**
+     * 框架的方法集合，是全局公用对象
+     * @namespace xjs
+     */
     window.xjs = xjs = {};
 
     var containerNode = document.getElementById('appview');
@@ -6,9 +10,11 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
     var _instances = xjs._instances = {};
 
     /**
-     * @method
-     * @desc 销毁页面Controler
+     * 销毁一个Page类，并触发onExit事件
+     * @method destoryView
+     * @memberOf xjs
      * @param {string} id 实例化类的id
+     * @see widget
      */
     xjs.destroyView = function (id) {
         if (!Object.getOwnPropertyNames(_instances).length) return;
@@ -29,24 +35,15 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
         });
     };
 
-    xjs.destroyViewByNexus = function (nexus) {
-        if (!nexus.length)
-            return xjs.destroyView(instance);
-
-        for (var instance in _instances) {
-            if (nexus.indexOf(_instances[instance].routeEventName) < 0)
-                xjs.destroyView(instance);
-        }
-    };
-
-    // xjs.checkRoutingInstance = function (name) {
-    //     for (var instance in _instances) {
-    //         if (_instances[instance].routeEventName == name)
-    //             return true;
-    //     }
-    //     return false;
-    // };
-
+    /**
+     * 实例化一个Page类，请确已使用xjs.declare申明这个类
+     * @method createView
+     * @memberOf xjs
+     * @param {String} name 已申明的Page类名
+     * @param {Object}[param] 可选参数，可选此对象将会和Page对象合并
+     * @param {Object}[wrapper] 可选参数，传入Dom节点则会以这个节点为父节点，否则就会在#appview下创建一个新的dom节点
+     * @param {Boolean}[defaultNode] 可选参数，选择以Wrapper或Wrapper的子节点作为主节点，将会插入模板到此结点
+     */
     xjs.createView = function (name, param, wrapper, defaultNode) {
         if (!wrapper) {
             wrapper = document.createElement('div');
@@ -83,24 +80,59 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
         })() : _class[name];
     };
 
+    /**
+     * 申明一个Page类，所有Page类都需要先申明后才可以作为参数被被creatView使用
+     * @method declare
+     * @memberOf xjs
+     * @param {String} classname Page类的名字
+     * @param {Object} parents 继承的对象
+     * @param {Object} prop Page类的方法集合
+     * @see widget
+     */
     xjs.declare = function (classname, parents, prop) {
         return _class[classname] = mixinProp(parents, prop);
     };
 
+    /**
+     * 获取一个已实例化的Page类，传入Page类的id后获取到对象
+     * @method byId
+     * @memberOf xjs
+     * @param {String} 传入实例化的Page类下的_id
+     * @return {Object} 当前id所对应的Page类的this对象
+     */
     xjs.byId = function (id) {
         var id = id.indexOf('#') >= 0 ? id.substr(1) : id;
         return _instances[id];
     };
 
+    /**
+     * 注册一个全局事件，可以通过xjs.triggerAnnounceEvent触发
+     * @method addAnnounceEvent
+     * @memberOf xjs
+     * @param {String} name 事件名
+     * @param {Function} fn 回调函数
+     */
     xjs.addAnnounceEvent = function (name, fn) {
         $(document).on(name, fn);
     };
 
+    /**
+     * 触发一个全局事件
+     * @method triggerAnounceEvent
+     * @memberOf xjs
+     * @param {String} name 事件名
+     */
     xjs.triggerAnnounceEvent = function (name) {
         var parameter = [].slice.apply(arguments, [1, arguments.length]);
         $(document).trigger(name, parameter);
     };
 
+    /**
+     * 注销一个全局事件
+     * @method removeAnnounceEvent
+     * @memberOf xjs
+     * @param {String} name 事件名
+     */
     xjs.removeAnnounceEvent = function (name) {
         $(document).off(name);
     };
