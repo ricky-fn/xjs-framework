@@ -293,7 +293,7 @@ gulp.task('server', function() {
 
 gulp.task('apidoc', function (done) {
     var config = require('./jsdoc.json');
-    gulp.src(['README.md', src + '**/*.js'], {read: false})
+    gulp.src(['README.md', src + '**/*.js', '!' + src + 'js/lib/*.js'], {read: false})
         .pipe(jsdoc(config, done));
 });
 
