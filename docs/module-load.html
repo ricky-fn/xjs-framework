@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>load - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-Router.html">Router</a><ul class='methods'><li data-type='method'><a href="module-Router.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-Router.html#.define">define</a></li><li data-type='method'><a href="module-Router.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-Router.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-Router.html#.navigator">navigator</a></li><li data-type='method'><a href="module-Router.html#.setup">setup</a></li><li data-type='method'><a href="module-Router.html#.start">start</a></li><li data-type='method'><a href="module-Router.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destoryView">destoryView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="core_widget.js.html">core/widget.js</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">load</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>数据请求模块，用于ajax数据请求，此插件在zepto的ajax函数上封装了一些功能。根据后端返回的code代号或失败，在错误的code代码下将会在后台处理。<br>
+    注意此模块利用了zepto的deferred对象处理回调信息，请在实例化后利用then方法处理回调函数。<br></p></div>
+        
+
+        
+            
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="plugin_ajax.js.html">plugin/ajax.js</a>, <a href="plugin_ajax.js.html#line3">line 3</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>//为了保证前端能正确获取后端给出的请求状态和数据内容，请保持所有接口的返回格式按照以下述为准:{  code: 0 //默认0为成功，不等于0则表明异常  msg: "" //当code不等于0时，请讲具体错误信息放到这里  content: {} //接口所应该提供的数据内容}//config参数的配置列子：//基于$.ajax的参数上新增了以下四个参数{ skipError: false, //可选参数默认为false，处理当请求出错时是否要交给deferred回调处理，当设置为false时交给模块内部处理，当设置为true时交给deferred回调处理 offAnimate: false, //可选参数默认为false，处理是否要打开加载动画 showShadow: false, //可选参数默认为false，处理是否现实遮罩图层 useCache: false, //可选参数默认为false，处理是否要缓存此次请求的结果}//先假设请求一个somehow.do参数返回以下数据：{  code: 0,  data: {    newProject: true  }}xjs.load = new load();//一般情况下：xjs.load({ url: "somehow.do", type: "GET"}).then(function(result) {  //默认情况下返回response里的content对象  console.log(result); //result == {newProject: true};});//假设code不等于0而是任意数5(这取决于后端对错误code的定义)，默认情况下是不会触发then函数里的回调 而是交给ajax模块内部处理。//设置skipError为true后，将会交给then函数处理错误信息。xjs.load({ url: "somehow.do", type: "GET", skipeError: true}).then(function(result) {  console.log(result); //result == {code:5, msg: "数据错误", content: {}};});</code></pre>
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>config</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>配置请求参数</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 08 2017 22:44:33 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

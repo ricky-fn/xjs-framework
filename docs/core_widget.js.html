@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>core/widget.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-Router.html">Router</a><ul class='methods'><li data-type='method'><a href="module-Router.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-Router.html#.define">define</a></li><li data-type='method'><a href="module-Router.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-Router.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-Router.html#.navigator">navigator</a></li><li data-type='method'><a href="module-Router.html#.setup">setup</a></li><li data-type='method'><a href="module-Router.html#.start">start</a></li><li data-type='method'><a href="module-Router.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destoryView">destoryView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="widget.html">widget</a><ul class='methods'><li data-type='method'><a href="widget.html#.startup">startup</a></li><li data-type='method'><a href="widget.html#buildRender">buildRender</a></li><li data-type='method'><a href="widget.html#init">init</a></li><li data-type='method'><a href="widget.html#onExit">onExit</a></li><li data-type='method'><a href="widget.html#request">request</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">core/widget.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
+    var declare = xjs.declare;
+
+    /**
+     * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义&lt;br>
+     * 所有page类通过[xjs.declare]{@lends xjs#declare}申明
+     * 执行的顺序按照:&lt;br>
+     * init-->request-->syncGetData-->buildRender-->startup-->onExit
+     * @mixin widget
+     */
+    return declare('ui.Widget', {
+        /**
+         * Page类的初始化函数，同时控制渲染事件的执行流程，此方法不可以被重写。
+         * @memberOf widget
+         * @method init
+         * @instance
+         * @param dom 基类渲染的Dom节点
+         */
+        init: function (dom) {
+            this.domNode = this.domNode || (this.$domNode = $(dom)).get(0);
+
+            this.render();
+
+            $.when(this.syncGetData()).done(
+                xjs.hitch(this, function () {
+                    this.buildRender();
+                    if (!this.finalStep) {
+                        xjs.triggerAnnounceEvent('widgetReady', this.routeEventName);
+                    } else {
+                        xjs.triggerAnnounceEvent('allWidgetReady', this.routeEventName);
+                    }
+                    /**
+                     * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
+                     * @memberOf widget
+                     * @method startup
+                     */
+                    this.startup &amp;&amp; this.startup();
+                })
+            );
+            return this;
+        },
+        render: function () {
+            /**
+             * 定义Page的标题
+             * @type {string}
+             * @memberOf widget
+             * @name title
+             */
+            document.title = this.title || document.title;
+            this.id = this.domNode.id;
+        },
+        syncGetData: function () {
+            /**
+             * request函数用于设置需要预先请求的数据队列，所有队列请求成功后才会执行后面的流程。
+             * 对zepto的ajax模块进行了二次封装，所有参数和$.ajax一致。ajax返回的数据将会根据app的名字挂载到this.data下
+             * @memberOf widget
+             * @method request
+             * @instance
+             * @example
+             * request: function() {
+             *     return {
+             *         app: 'name', //在request之后的函数中可以用this.data.name获取到数据
+             *         url: 'example.do',
+             *         data: {}
+             *     }
+             * }
+             * //或者
+             * request: function() {
+             *     return [{
+             *         app: 'app1', //在request之后的函数中可以用this.data.name获取到数据
+             *         url: 'example.do',
+             *         data: {}
+             *     }, {
+             *         app: 'app2',
+             *         url: 'test.do'
+             *     }]
+             * }
+             */
+            var o = this.request ? this.request() : 0, dtd = $.Deferred();
+            if (!o) return dtd.resolve();
+            if (o.then) {
+                o.done(xjs.hitch(this, waitRequest));
+                return dtd.promise();
+            }
+            xjs.hitch(this, waitRequest)(o);
+            function waitRequest(param) {
+                var param = param instanceof Array ? param : [param], i, name, count = 0;
+                this.data = this.data || {};
+                for (i = 0; i &lt; param.length; i++) {
+                    name = param[i].app;
+                    if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
+                    delete param[i].app;
+                    xjs.load(param[i]).then(
+                        xjs.hitch(this, function (reslute, key) {
+                            this.data[key] = reslute;
+                            count += 1;
+                            if (count == param.length) dtd.resolve();
+                        }, name)
+                    );
+                }
+            }
+
+            return dtd.promise();
+        },
+        /**
+         * 模板渲染流程，将会把this对象作为数据采集对象传入模板。并扫描模板里的自定义锚点后映射到this对象上&lt;br>
+         * [data-xjs-element] 将挂载到this对象上，并通过$ + name 用以区分普通dom对象和jquery对象
+         * @example
+         * &lt;div data-xjs-element="divNode">&lt;/div>
+         * //this.divNode 获取原始dom对象
+         * //this.$divNode 获取jquery对象
+         * @memberOf widget
+         * @method buildRender
+         * @instance
+         * @see {widget#request}
+         */
+        buildRender: function () {
+            this.$domNode.addClass(this.baseClass);
+            if (this.templateString) {
+                this.domNode.innerHTML = _.template(this.templateString)(this);
+            }
+            __createNode.call(this) &amp;&amp; __createEvent.call(this);
+        },
+        /**
+         * Page的退出事件，在路由切换被触发时调用，如果有添加事件监听需要自行注销，应该写在这个事件里，
+         * 如果你复写了这个函数，别忘了在function末尾调用this._super()
+         * @memberOf widget
+         * @method onExit
+         * @instance
+         */
+        onExit: function () {
+            this.$domNode.off().remove();
+        }
+    });
+    function __createNode() {
+        var doms, dom, parents, n, i;
+        doms = this.domNode.querySelectorAll('[data-xjs-element]');
+        doms = Array.prototype.slice.call(doms);
+        for (i = 0; i &lt; doms.length; i++) {
+            dom = $(doms[i]);
+            parents = dom.parents('[data-xjs-mixin]');
+            if (parents.length &amp;&amp; parents[0] != this.domNode) break;
+            n = dom.data('xjs-element');
+            this[n] = ( this['$' + n] = dom ).get(0);
+        }
+        return true;
+    }
+
+    function __createEvent() {
+        var doms, dom, parents, n, i;
+        doms = this.domNode.querySelectorAll('[data-xjs-event]');
+        doms = Array.prototype.slice.call(doms);
+        if (this.$domNode.data('xjs-event')) doms.push(this.domNode);
+        for (i = 0; i &lt; doms.length; i++) {
+            var fns = {}, f, j;
+            dom = $(doms[i]);
+            parents = dom.parents('[data-xjs-mixin]');
+
+            if (parents.length &amp;&amp; parents[0] != this.domNode)
+                break;
+
+            n = dom.data('xjs-event');
+            f = n.replace(/\s/g, "").split(';').slice(0, -1);
+            for (j = 0; j &lt; f.length; j++) {
+                var event = f[j].split(':');
+                dom.on(event[0], xjs.hitch(this, this[event[1]]));
+            }
+        }
+        return true;
+    }
+});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 08 2017 22:42:48 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
