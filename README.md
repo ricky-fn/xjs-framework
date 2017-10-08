@@ -40,7 +40,8 @@ gulp release //发布线上版本
 ```
 
 ### API文档：
-请在当前项目路径下，在命令行里执行以下命令去获取API文档，api文档将会被放在docs/目录下    
+文档根据jsdoc的规则编写，请执行docs/index.html获取api信息。
+当更新了js备注后，在命令行里执行下面的命令更新文档
 ```javascript
 gulp apidoc
 ```
