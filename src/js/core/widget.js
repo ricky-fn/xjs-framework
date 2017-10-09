@@ -23,22 +23,20 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
 
             this.render();
 
-            $.when(this.syncGetData()).done(
-                xjs.hitch(this, function () {
-                    this.buildRender();
-                    if (!this.finalStep) {
-                        xjs.triggerAnnounceEvent('widgetReady', this.routeEventName);
-                    } else {
-                        xjs.triggerAnnounceEvent('allWidgetReady', this.routeEventName);
-                    }
-                    /**
-                     * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
-                     * @memberOf widget
-                     * @function startup
-                     */
-                    this.startup && this.startup();
-                })
-            );
+            $.when(this.syncGetData()).done(function () {
+                this.buildRender();
+                if (!this.finalStep) {
+                    xjs.triggerAnnounceEvent('widgetReady', this.routeEventName);
+                } else {
+                    xjs.triggerAnnounceEvent('allWidgetReady', this.routeEventName);
+                }
+                /**
+                 * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
+                 * @memberOf widget
+                 * @function startup
+                 */
+                this.startup && this.startup();
+            }.bind(this));
             return this;
         },
         render: function () {
