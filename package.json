@@ -1,6 +1,6 @@
 {
-  "name": "xbet_mobile",
-  "version": "2.0.0",
+  "name": "xjs-framework",
+  "version": "1.0.0",
   "private": true,
   "devDependencies": {
     "gulp": "^3.8.11",
