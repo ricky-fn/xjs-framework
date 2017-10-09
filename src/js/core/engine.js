@@ -11,9 +11,9 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
 
     /**
      * 销毁一个Page类，并触发onExit事件
-     * @method destoryView
+     * @method destroyView
      * @memberOf xjs
-     * @param {string} id 实例化类的id
+     * @param {string} id 实例化后的Page类的`id`
      * @see widget
      */
     xjs.destroyView = function (id) {
@@ -36,13 +36,14 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
     };
 
     /**
-     * 实例化一个Page类，请确已使用xjs.declare申明这个类
+     * 实例化一个Page类，请确已申明这个类。[xjs.declare]{@link xjs.declare}
      * @method createView
      * @memberOf xjs
      * @param {String} name 已申明的Page类名
      * @param {Object}[param] 可选参数，可选此对象将会和Page对象合并
-     * @param {Object}[wrapper] 可选参数，传入Dom节点则会以这个节点为父节点，否则就会在#appview下创建一个新的dom节点
+     * @param {Object}[wrapper] 可选参数，传入Dom节点则会以这个节点为父节点，否则就会在`#appview`下创建一个新的dom节点
      * @param {Boolean}[defaultNode] 可选参数，选择以Wrapper或Wrapper的子节点作为主节点，将会插入模板到此结点
+     * @see xjs.declare
      */
     xjs.createView = function (name, param, wrapper, defaultNode) {
         if (!wrapper) {
@@ -85,8 +86,8 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
      * @method declare
      * @memberOf xjs
      * @param {String} classname Page类的名字
-     * @param {Object} parents 继承的对象
-     * @param {Object} prop Page类的方法集合
+     * @param {Object} parents 此Page类的父类继承对象，通常使用[widget]{@link widget}作为父类
+     * @param {Object} prop Page类的方法
      * @see widget
      */
     xjs.declare = function (classname, parents, prop) {
@@ -97,7 +98,7 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
      * 获取一个已实例化的Page类，传入Page类的id后获取到对象
      * @method byId
      * @memberOf xjs
-     * @param {String} 传入实例化的Page类下的_id
+     * @param {String} id 传入实例化的Page类的`id`
      * @return {Object} 当前id所对应的Page类的this对象
      */
     xjs.byId = function (id) {

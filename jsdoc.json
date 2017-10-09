@@ -13,7 +13,11 @@
     "verbose": true
   },
   "templates": {
-    "cleverLinks": false,
+    "cleverLinks": true,
     "monospaceLinks": false
+  },
+  "docdash": {
+    "static": true,
+    "sort": true
   }
 }

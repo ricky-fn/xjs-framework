@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-Router.html">Router</a><ul class='methods'><li data-type='method'><a href="module-Router.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-Router.html#.define">define</a></li><li data-type='method'><a href="module-Router.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-Router.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-Router.html#.navigator">navigator</a></li><li data-type='method'><a href="module-Router.html#.setup">setup</a></li><li data-type='method'><a href="module-Router.html#.start">start</a></li><li data-type='method'><a href="module-Router.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destoryView">destoryView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="core_widget.js.html">core/widget.js</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-route.html">route</a><ul class='methods'><li data-type='method'><a href="module-route.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-route.html#.define">define</a></li><li data-type='method'><a href="module-route.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-route.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-route.html#.navigator">navigator</a></li><li data-type='method'><a href="module-route.html#.setup">setup</a></li><li data-type='method'><a href="module-route.html#.start">start</a></li><li data-type='method'><a href="module-route.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destroyView">destroyView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="widget.html">widget</a><ul class='members'><li data-type='member'><a href="widget.html#.baseClass">baseClass</a></li><li data-type='member'><a href="widget.html#.id">id</a></li><li data-type='member'><a href="widget.html#.templateString">templateString</a></li><li data-type='member'><a href="widget.html#.title">title</a></li></ul><ul class='methods'><li data-type='method'><a href="widget.html#.buildRender">buildRender</a></li><li data-type='method'><a href="widget.html#.init">init</a></li><li data-type='method'><a href="widget.html#.onExit">onExit</a></li><li data-type='method'><a href="widget.html#.request">request</a></li><li data-type='method'><a href="widget.html#.startup">startup</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -40,7 +40,7 @@
             <pre class="prettyprint source linenums"><code>define('route', function () {
     /**
      * 路由模块
-     * @module Router
+     * @module route
      */
     function Router() {}
 
@@ -50,7 +50,7 @@
     /**
      * 定义路由映射表以及路由的回调函数，支持利用正则表达式
      * @method setup
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param [Object] routemap 路由定义表
      * @param [Object] callbacks 回调组
      * @example
@@ -92,7 +92,7 @@
     /**
      * 定义路由回调
      * @method define
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param {String} name
      * @param {Object}[nexus] 此路由所依赖的关系链
      * @param {Boolean}[authorize] 是否需要登录操作
@@ -148,13 +148,13 @@
      * 路由导航
      * @method navigator
      * @memberOf xjs/router
-     * @see module:Router#navigator
+     * @see module:route#navigator
      */
 
     /**
      * 导航到下一个路由地址
      * @method navigator
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param {String}[hash] 下一个路由的Hash地址，不填写则默认引导到#home
      * @param {Object}[state] 路由的缓存内容，将会存储到history.state对象里
      * @param {Boolean}[replaceHash] 当设置为true时会提换历史记录里最后一条路由信息，当设置为false时则会以新增的方式插入历史纪录
@@ -208,7 +208,7 @@
      * 启动路由监听事件，必须在定义路由引射表以及路由回调后再启动。&lt;br>
      * 将会监听路由切换事件，例如浏览器的回退和前进
      * @method start
-     * @memberOf module:Router
+     * @memberOf module:route
      */
     Router.prototype.start = function () {
         var that = this;
@@ -233,7 +233,7 @@
     /**
      * 检测hash是否在路由路由映射表内
      * @method verify
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param hash
      * @return {Boolean} 是否匹配到
      */
@@ -258,7 +258,7 @@
     /**
      * 跳转到登陆模块，完成用户身份验证后再进入hash所匹配的路由
      * @method getAuthorization
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param hash
      */
     Router.prototype.getAuthorization = function (hash) {
@@ -268,7 +268,7 @@
     /**
      * 检查当前路由是否能在路由映射表里找到，如果找不到匹配值就会触发传递给setup里的fail函数
      * @method checkMatchResult
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param {String} hash
      * @param {Function} callback
      */
@@ -290,9 +290,9 @@
     };
 
     /**
-     * 对当前路由依赖关系以及下一个路由依赖关系做对比，会保留重复调用的路由关系链成员
+     * 对当前路由依赖关系以及下一个路由依赖关系做对比，对不存在于路由关系链里的模块会销毁掉[xjs.destroyView]{@link xjs.destroyView}
      * @method excludeAbandonModules
-     * @memberOf module:Router
+     * @memberOf module:route
      */
     Router.prototype.excludeAbandondModules = function (response, result, newNexus, cb) {
         if (!newNexus) {
@@ -340,7 +340,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 08 2017 22:44:33 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Oct 09 2017 14:55:18 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

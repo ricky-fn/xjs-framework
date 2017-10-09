@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-Router.html">Router</a><ul class='methods'><li data-type='method'><a href="module-Router.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-Router.html#.define">define</a></li><li data-type='method'><a href="module-Router.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-Router.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-Router.html#.navigator">navigator</a></li><li data-type='method'><a href="module-Router.html#.setup">setup</a></li><li data-type='method'><a href="module-Router.html#.start">start</a></li><li data-type='method'><a href="module-Router.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destoryView">destoryView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="core_widget.js.html">core/widget.js</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-route.html">route</a><ul class='methods'><li data-type='method'><a href="module-route.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-route.html#.define">define</a></li><li data-type='method'><a href="module-route.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-route.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-route.html#.navigator">navigator</a></li><li data-type='method'><a href="module-route.html#.setup">setup</a></li><li data-type='method'><a href="module-route.html#.start">start</a></li><li data-type='method'><a href="module-route.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destroyView">destroyView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="widget.html">widget</a><ul class='members'><li data-type='member'><a href="widget.html#.baseClass">baseClass</a></li><li data-type='member'><a href="widget.html#.id">id</a></li><li data-type='member'><a href="widget.html#.templateString">templateString</a></li><li data-type='member'><a href="widget.html#.title">title</a></li></ul><ul class='methods'><li data-type='method'><a href="widget.html#.buildRender">buildRender</a></li><li data-type='method'><a href="widget.html#.init">init</a></li><li data-type='method'><a href="widget.html#.onExit">onExit</a></li><li data-type='method'><a href="widget.html#.request">request</a></li><li data-type='method'><a href="widget.html#.startup">startup</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -50,9 +50,9 @@
 
     /**
      * 销毁一个Page类，并触发onExit事件
-     * @method destoryView
+     * @method destroyView
      * @memberOf xjs
-     * @param {string} id 实例化类的id
+     * @param {string} id 实例化后的Page类的`id`
      * @see widget
      */
     xjs.destroyView = function (id) {
@@ -75,13 +75,14 @@
     };
 
     /**
-     * 实例化一个Page类，请确已使用xjs.declare申明这个类
+     * 实例化一个Page类，请确已申明这个类。[xjs.declare]{@link xjs.declare}
      * @method createView
      * @memberOf xjs
      * @param {String} name 已申明的Page类名
      * @param {Object}[param] 可选参数，可选此对象将会和Page对象合并
-     * @param {Object}[wrapper] 可选参数，传入Dom节点则会以这个节点为父节点，否则就会在#appview下创建一个新的dom节点
+     * @param {Object}[wrapper] 可选参数，传入Dom节点则会以这个节点为父节点，否则就会在`#appview`下创建一个新的dom节点
      * @param {Boolean}[defaultNode] 可选参数，选择以Wrapper或Wrapper的子节点作为主节点，将会插入模板到此结点
+     * @see xjs.declare
      */
     xjs.createView = function (name, param, wrapper, defaultNode) {
         if (!wrapper) {
@@ -124,8 +125,8 @@
      * @method declare
      * @memberOf xjs
      * @param {String} classname Page类的名字
-     * @param {Object} parents 继承的对象
-     * @param {Object} prop Page类的方法集合
+     * @param {Object} parents 此Page类的父类继承对象，通常使用[widget]{@link widget}作为父类
+     * @param {Object} prop Page类的方法
      * @see widget
      */
     xjs.declare = function (classname, parents, prop) {
@@ -136,7 +137,7 @@
      * 获取一个已实例化的Page类，传入Page类的id后获取到对象
      * @method byId
      * @memberOf xjs
-     * @param {String} 传入实例化的Page类下的_id
+     * @param {String} id 传入实例化的Page类的`id`
      * @return {Object} 当前id所对应的Page类的this对象
      */
     xjs.byId = function (id) {
@@ -217,7 +218,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 08 2017 22:44:33 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Oct 09 2017 14:55:18 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

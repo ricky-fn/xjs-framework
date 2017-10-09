@@ -1,7 +1,7 @@
 define('route', function () {
     /**
      * 路由模块
-     * @module Router
+     * @module route
      */
     function Router() {}
 
@@ -11,7 +11,7 @@ define('route', function () {
     /**
      * 定义路由映射表以及路由的回调函数，支持利用正则表达式
      * @method setup
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param [Object] routemap 路由定义表
      * @param [Object] callbacks 回调组
      * @example
@@ -53,7 +53,7 @@ define('route', function () {
     /**
      * 定义路由回调
      * @method define
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param {String} name
      * @param {Object}[nexus] 此路由所依赖的关系链
      * @param {Boolean}[authorize] 是否需要登录操作
@@ -109,13 +109,13 @@ define('route', function () {
      * 路由导航
      * @method navigator
      * @memberOf xjs/router
-     * @see module:Router#navigator
+     * @see module:route#navigator
      */
 
     /**
      * 导航到下一个路由地址
      * @method navigator
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param {String}[hash] 下一个路由的Hash地址，不填写则默认引导到#home
      * @param {Object}[state] 路由的缓存内容，将会存储到history.state对象里
      * @param {Boolean}[replaceHash] 当设置为true时会提换历史记录里最后一条路由信息，当设置为false时则会以新增的方式插入历史纪录
@@ -169,7 +169,7 @@ define('route', function () {
      * 启动路由监听事件，必须在定义路由引射表以及路由回调后再启动。<br>
      * 将会监听路由切换事件，例如浏览器的回退和前进
      * @method start
-     * @memberOf module:Router
+     * @memberOf module:route
      */
     Router.prototype.start = function () {
         var that = this;
@@ -194,7 +194,7 @@ define('route', function () {
     /**
      * 检测hash是否在路由路由映射表内
      * @method verify
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param hash
      * @return {Boolean} 是否匹配到
      */
@@ -219,7 +219,7 @@ define('route', function () {
     /**
      * 跳转到登陆模块，完成用户身份验证后再进入hash所匹配的路由
      * @method getAuthorization
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param hash
      */
     Router.prototype.getAuthorization = function (hash) {
@@ -229,7 +229,7 @@ define('route', function () {
     /**
      * 检查当前路由是否能在路由映射表里找到，如果找不到匹配值就会触发传递给setup里的fail函数
      * @method checkMatchResult
-     * @memberOf module:Router
+     * @memberOf module:route
      * @param {String} hash
      * @param {Function} callback
      */
@@ -251,9 +251,9 @@ define('route', function () {
     };
 
     /**
-     * 对当前路由依赖关系以及下一个路由依赖关系做对比，会保留重复调用的路由关系链成员
+     * 对当前路由依赖关系以及下一个路由依赖关系做对比，对不存在于路由关系链里的模块会销毁掉[xjs.destroyView]{@link xjs.destroyView}
      * @method excludeAbandonModules
-     * @memberOf module:Router
+     * @memberOf module:route
      */
     Router.prototype.excludeAbandondModules = function (response, result, newNexus, cb) {
         if (!newNexus) {

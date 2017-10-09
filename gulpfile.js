@@ -264,10 +264,10 @@ gulp.task('server', function() {
         sequence('imagemin', reload);
     });
     gulp.watch([src + 'js/**/*.js'], function() {
-        sequence(['jsdoc', 'optimizeJS'], reload);
+        sequence('optimizeJS', reload);
     });
     gulp.watch([src + 'js/**/*.js', '!' + src + 'js/plugin/*.js', '!' + src + 'js/lib/*.js'], function() {
-        sequence(['jsdoc', 'optimizeJS'], reload);
+        sequence('optimizeJS', reload);
     });
     gulp.watch([src + 'js/plugin/*.js', src + 'js/lib/*.js'], function() {
         return gulp.src([src + 'js/plugin/*.js', src + 'js/lib/*.js'])
@@ -313,4 +313,19 @@ gulp.task('release', ['clean:dev'], function() {
         .on('end', function () {
             sequence('imagemin', 'optimizeJS', ['sass', 'json'], 'addVersionOnJs', 'build:index', 'clean:surplus');
         });
+});
+
+gulp.task('editAPI', function () {
+    browserSync.init({
+        ui: false
+        , port: 81
+        , server: {
+            baseDir: "docs",
+            index: "index.html"
+        }
+    });
+
+    gulp.watch([src + 'js/core/*.js', src + 'js/plugin/*.js', src + 'js/app.js', src + 'js/router.js', 'README.md'], function() {
+        sequence('apidoc', reload);
+    });
 });

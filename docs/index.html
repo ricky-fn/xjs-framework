@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-Router.html">Router</a><ul class='methods'><li data-type='method'><a href="module-Router.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-Router.html#.define">define</a></li><li data-type='method'><a href="module-Router.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-Router.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-Router.html#.navigator">navigator</a></li><li data-type='method'><a href="module-Router.html#.setup">setup</a></li><li data-type='method'><a href="module-Router.html#.start">start</a></li><li data-type='method'><a href="module-Router.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destoryView">destoryView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="core_widget.js.html">core/widget.js</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-route.html">route</a><ul class='methods'><li data-type='method'><a href="module-route.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-route.html#.define">define</a></li><li data-type='method'><a href="module-route.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-route.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-route.html#.navigator">navigator</a></li><li data-type='method'><a href="module-route.html#.setup">setup</a></li><li data-type='method'><a href="module-route.html#.start">start</a></li><li data-type='method'><a href="module-route.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destroyView">destroyView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="widget.html">widget</a><ul class='members'><li data-type='member'><a href="widget.html#.baseClass">baseClass</a></li><li data-type='member'><a href="widget.html#.id">id</a></li><li data-type='member'><a href="widget.html#.templateString">templateString</a></li><li data-type='member'><a href="widget.html#.title">title</a></li></ul><ul class='methods'><li data-type='method'><a href="widget.html#.buildRender">buildRender</a></li><li data-type='method'><a href="widget.html#.init">init</a></li><li data-type='method'><a href="widget.html#.onExit">onExit</a></li><li data-type='method'><a href="widget.html#.request">request</a></li><li data-type='method'><a href="widget.html#.startup">startup</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -46,15 +46,10 @@
 
 
     <section class="readme">
-        <article><h3>版本号：1.0.0</h3><h3>简介：</h3><p>基于MVC的理念构建的一个前端单页应用框架，追求轻巧、快速、可复用、不脱离原生写法的前端框架。
-目前angular、react等流行的前端框架，虽然功能强大但有几个明显的缺陷：</p>
-<ol>
-<li>在JS以及HTML中创建了非常多用于双向绑定的语法，过于抽象并且脱离了原生JS的一些基本逻辑，导致许多前端工程师需要花费大量时间去学习和理解。</li>
-<li>强调双向数据绑定导致了代码的调试非常麻烦。</li>
-<li>API变化太快，例如angular v1.0 和 v2.0根本就是两个框架，这对于花费大量时间学会了angular v1.0的人来说绝对是噩梦。</li>
-</ol>
-<p>所以本着学习和研究的目的以及更加稳定可靠 在借鉴了这些框架的优点后 构建了一套前端框架，力求根据公司业务灵活的调整、快速开发、简单上手。</p>
-<h3>目录分类：</h3><pre class="prettyprint source"><code>dev/ 前端自动构建工具生成文件夹，存储编译过后的文件
+        <article><h3>版本号：1.0.0</h3><h3>简介：</h3><p>个人使用前端开发集成框架，集成了单页应用框架以及前端项目自动构建工具，适用于中小型项目的快速开发。</p>
+<h3>API文档：</h3><p>文档根据jsdoc的规则编写，请执行<a href="https://github.com/a2604882741z/xjs-framework/tree/master/docs">docs/index.html</a>获取api信息。
+当更新了js备注后，在命令行里执行下面的命令更新文档。</p>
+<pre class="prettyprint source lang-javascript"><code>gulp editAPI</code></pre><h3>目录分类：</h3><pre class="prettyprint source"><code>dev/ 前端自动构建工具生成文件夹，存储编译过后的文件
 src/ 前端资源文件夹
     icons/ 图标
     images/ 公用图片
@@ -71,11 +66,10 @@ src/ 前端资源文件夹
         app.js 项目入口文件
         router.js 路由定义模块</code></pre><h3>前端开发环境配置：</h3><ol>
 <li>安装Nodejs</li>
-<li>在当前路径下，在命令行里执行npm install载入依赖包</li>
+<li>在当前路径下，在命令行里执行<code>npm install</code>载入依赖包再执行<code>npm install -g gulp</code></li>
 <li>在命令行里执行：<pre class="prettyprint source lang-javascript"><code>gulp //开始工作</code></pre></li>
 <li>开发结束后执行一下命令，并从dev目录里获取发布版本<pre class="prettyprint source lang-javascript"><code>gulp release //发布线上版本</code></pre></li>
 </ol>
-<h3>API文档：</h3><p>正在补充..</p>
 <h3>任何疑问：</h3><p>QQ: 3427495853
 mail: mr.jiangxue@hotmail.com</p></article>
     </section>
@@ -90,7 +84,7 @@ mail: mr.jiangxue@hotmail.com</p></article>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Oct 08 2017 22:44:33 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Oct 09 2017 14:55:18 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
