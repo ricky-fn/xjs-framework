@@ -3,7 +3,7 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
      * 框架的方法集合，是全局公用对象
      * @namespace xjs
      */
-    window.xjs = xjs = {};
+    xjs = {};
 
     var containerNode = document.getElementById('appview');
     var _class = {};
@@ -40,45 +40,60 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
      * @method createView
      * @memberOf xjs
      * @param {String} name 已申明的Page类名
-     * @param {Object}[param] 可选参数，可选此对象将会和Page对象合并
-     * @param {Object}[wrapper] 可选参数，传入Dom节点则会以这个节点为父节点，否则就会在`#appview`下创建一个新的dom节点
-     * @param {Boolean}[defaultNode] 可选参数，选择以Wrapper或Wrapper的子节点作为主节点，将会插入模板到此结点
+     * @param {Object} param 可选此对象将会和Page对象合并
+     * @param {Object} node 传入Dom节点则会以这个节点为父节点，否则就会在`#appview`下创建一个新的dom节点
+     * @param {Boolean} defaultNode 选择以Wrapper或Wrapper的子节点作为主节点，将会插入模板到此结点
+     * @return {Deferred} 返回一个Promise对象
      * @see xjs.declare
      */
-    xjs.createView = function (name, param, wrapper, defaultNode) {
-        if (!wrapper) {
-            wrapper = document.createElement('div');
-            $(containerNode).append(wrapper);
+    xjs.createView = function (name, param, node, defaultNode) {
+        if (!node) {
+            node = document.createElement('div');
+            $(containerNode).append(node);
         } else {
             if (!defaultNode) {
-                wrapper = $('<div></div>').appendTo(wrapper).get(0);
+                node = $('<div></div>').appendTo(node).get(0);
             } else {
-                wrapper = $(wrapper).get(0);
+                node = $(node).get(0);
             }
         }
-        return xjs.getDeclare(name, param || {}, wrapper);
+
+        var def = $.Deferred();
+        var prop = this.getDeclare(name);
+
+        node.id = (function () {
+            var o = 0, taskName = name.replace(/\./, '_') + '_';
+            while (_instances[taskName + o]) {
+                o += 1;
+            }
+            return taskName + o;
+        })();
+
+        if (prop == undefined) {
+            require([name], function (prop) {
+                try {
+                    var instance = _instances[node.id] = mixinProp(prop, param);
+                    instance.init(node);
+                } catch (err) {
+                    throw err;
+                }
+                def.resolve(instance);
+            });
+        } else {
+            try {
+                var instance = _instances[node.id] = mixinProp(prop, param);
+                instance.init(node);
+            } catch (err) {
+                throw err;
+            }
+            def.resolve(instance);
+        }
+
+        return def.promise();
     };
 
-    xjs.getDeclare = function (name, param, node) {
-        return arguments.length > 1 ? (function () {
-            var dtd = $.Deferred();
-
-            node.id = (function () {
-                var o = 0, taskName = name.replace(/\./, '_') + '_';
-                while (_instances[taskName + o]) {
-                    o += 1;
-                }
-                return taskName + o;
-            })();
-
-            require([name], function (page) {
-                _instances[node.id] = mixinProp(page, param);
-                _instances[node.id].init(node);
-                dtd.resolve(_instances[node.id]);
-            });
-
-            return dtd.promise();
-        })() : _class[name];
+    xjs.getDeclare = function (name) {
+        return _class[name];
     };
 
     /**
