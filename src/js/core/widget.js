@@ -26,9 +26,9 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             $.when(this.syncGetData()).done(function () {
                 this.buildRender();
                 if (!this.finalStep) {
-                    xjs.triggerAnnounceEvent('widgetReady', this.routeEventName);
+                    xjs.broadcast.trigger('widgetReady', this.routeEventName);
                 } else {
-                    xjs.triggerAnnounceEvent('allWidgetReady', this.routeEventName);
+                    xjs.broadcast.trigger('allWidgetReady', this.routeEventName);
                 }
                 /**
                  * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
@@ -83,29 +83,13 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
              *     }]
              * }
              */
-            var o = this.request ? this.request() : 0, dtd = $.Deferred();
-            if (!o) return dtd.resolve();
-            if (o.then) {
-                o.done(xjs.hitch(this, waitRequest));
-                return dtd.promise();
-            }
-            xjs.hitch(this, waitRequest)(o);
-            function waitRequest(param) {
-                var param = param instanceof Array ? param : [param], i, name, count = 0;
-                this.data = this.data || {};
-                for (i = 0; i < param.length; i++) {
-                    name = param[i].app;
-                    if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
-                    delete param[i].app;
-                    xjs.load(param[i]).then(
-                        xjs.hitch(this, function (reslute, key) {
-                            this.data[key] = reslute;
-                            count += 1;
-                            if (count == param.length) dtd.resolve();
-                        }, name)
-                    );
-                }
-            }
+            var sequence = this.request ? this.request() : false;
+            var dtd = $.Deferred();
+
+            if (!sequence)
+                return dtd.resolve();
+
+            processSequence.call(this, dtd, sequence);
 
             return dtd.promise();
         },
@@ -151,6 +135,7 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             this.$domNode.off().remove();
         }
     });
+
     function __createNode() {
         var doms, dom, parents, n, i;
         doms = this.domNode.querySelectorAll('[data-xjs-element]');
@@ -186,5 +171,21 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             }
         }
         return true;
+    }
+
+    function processSequence(dtd, param) {
+        var param = param instanceof Array ? param : [param], i, name, count = 0;
+        this.data = this.data || {};
+        for (i = 0; i < param.length; i++) {
+            name = param[i].app;
+            if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
+            delete param[i].app;
+
+            xjs.load(param[i]).then(function (reslute, key) {
+                this.data[key] = reslute;
+                count += 1;
+                if (count == param.length) dtd.resolve();
+            }.bind(this, name));
+        }
     }
 });

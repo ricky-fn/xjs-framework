@@ -84,7 +84,7 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
                 var instance = _instances[node.id] = mixinProp(prop, param);
                 instance.init(node);
             } catch (err) {
-                throw err;
+                def.reject(err);
             }
             def.resolve(instance);
         }
@@ -119,38 +119,6 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
     xjs.byId = function (id) {
         var id = id.indexOf('#') >= 0 ? id.substr(1) : id;
         return _instances[id];
-    };
-
-    /**
-     * 注册一个全局事件，可以通过xjs.triggerAnnounceEvent触发
-     * @method addAnnounceEvent
-     * @memberOf xjs
-     * @param {String} name 事件名
-     * @param {Function} fn 回调函数
-     */
-    xjs.addAnnounceEvent = function (name, fn) {
-        $(document).on(name, fn);
-    };
-
-    /**
-     * 触发一个全局事件
-     * @method triggerAnounceEvent
-     * @memberOf xjs
-     * @param {String} name 事件名
-     */
-    xjs.triggerAnnounceEvent = function (name) {
-        var parameter = [].slice.apply(arguments, [1, arguments.length]);
-        $(document).trigger(name, parameter);
-    };
-
-    /**
-     * 注销一个全局事件
-     * @method removeAnnounceEvent
-     * @memberOf xjs
-     * @param {String} name 事件名
-     */
-    xjs.removeAnnounceEvent = function (name) {
-        $(document).off(name);
     };
 
     function mixinProp(parentClass, prop) {

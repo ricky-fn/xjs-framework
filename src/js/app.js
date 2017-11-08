@@ -8,6 +8,7 @@ requirejs.config({
         'route': 'core/route',
         'widget': 'core/widget',
         'watch': 'core/watch',
+        'broadcast': 'core/broadcast',
 
         'deferred': 'plugin/deferred',
         'ajax': 'plugin/ajax',
@@ -25,7 +26,18 @@ requirejs.config({
     }
 });
 
-require(['zepto', 'underscore', 'engine', 'widget', 'router', 'ajax', 'deferred', 'tool','watch'], function ($, _, xjs, widget, router, ajax, deferred, tool, watch) {
+require(
+    [
+        'zepto',
+        'underscore',
+        'engine',
+        'widget',
+        'router',
+        'ajax',
+        'deferred',
+        'tool',
+        'broadcast'
+    ], function ($, _, xjs, widget, router, ajax, deferred, tool, broadcast) {
     var user;
     /**
      * 获取用户数据
@@ -60,6 +72,15 @@ require(['zepto', 'underscore', 'engine', 'widget', 'router', 'ajax', 'deferred'
      * @see module:load
      */
     xjs.load = ajax;
+
+    /**
+     * 挂在事件广播模块
+     * @method broadcast
+     * @memberOf xjs
+     * @type {module:broadcast}
+     * @see module:broadcast
+     */
+    xjs.broadcast = broadcast;
 
     $(function () {
         /**

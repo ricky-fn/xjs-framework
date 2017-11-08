@@ -138,23 +138,23 @@ define('route', function () {
         this.checkMatchResult(hash, function (response, result, nexus) {
             history[replaceHash ? 'replaceState' : 'pushState'](state, null, hash);
 
-            xjs.triggerAnnounceEvent('beforePageChange', activeHash, result);
+            xjs.broadcast.trigger('beforePageChange', activeHash, result);
 
             self.excludeAbandondModules(response, result, nexus, function (renderTeam) {
                 var crenderTeam = renderTeam.concat();
 
-                xjs.addAnnounceEvent('widgetReady', function (e, routeResponseName) {
+                xjs.broadcast.add('widgetReady', this, function (routeResponseName) {
                     if (routeResponseName)
                         crenderTeam.splice(crenderTeam.indexOf(routeResponseName), 1);
 
                     if (!crenderTeam.length) {
-                        xjs.removeAnnounceEvent('widgetReady');
+                        xjs.broadcast.remove('widgetReady');
                         response.apply(null, result);
                     }
                 });
 
                 if (!renderTeam.length)
-                    return xjs.triggerAnnounceEvent('widgetReady');
+                    return xjs.broadcast.trigger('widgetReady');
 
                 $.each(crenderTeam, function (i, name) {
                     setTimeout(function () {
