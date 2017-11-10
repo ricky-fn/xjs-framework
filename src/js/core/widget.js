@@ -18,24 +18,25 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
          * @function init
          * @param dom 根Dom节点，用于插入模板
          */
-        init: function (dom) {
+        init: function (dom, callback) {
             this.domNode = this.domNode || (this.$domNode = $(dom)).get(0);
 
             this.render();
 
             $.when(this.syncGetData()).done(function () {
                 this.buildRender();
-                if (!this.finalStep) {
-                    xjs.broadcast.trigger('widgetReady', this.routeEventName);
-                } else {
-                    xjs.broadcast.trigger('allWidgetReady', this.routeEventName);
-                }
+                // if (!this.finalStep) {
+                //     xjs.broadcast.trigger('widgetReady', this.routeEventName);
+                // } else {
+                //     xjs.broadcast.trigger('allWidgetReady', this.routeEventName);
+                // }
                 /**
                  * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
                  * @memberOf widget
                  * @function startup
                  */
                 this.startup && this.startup();
+                callback && callback();
             }.bind(this));
             return this;
         },

@@ -82,11 +82,12 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
         } else {
             try {
                 var instance = _instances[node.id] = mixinProp(prop, param);
-                instance.init(node);
+                instance.init(node, function () {
+                    def.resolve(instance);
+                });
             } catch (err) {
                 def.reject(err);
             }
-            def.resolve(instance);
         }
 
         return def.promise();
