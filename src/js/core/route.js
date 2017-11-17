@@ -1,4 +1,4 @@
-define('route', ['engine'], function (xjs) {
+define('route', ['engine', 'tool'], function (xjs, tool) {
     /**
      * 路由模块
      * @module route
@@ -80,19 +80,19 @@ define('route', ['engine'], function (xjs) {
      * //todo something
      * })；
      */
-    Router.prototype.define = function (name, nexus, authorize, cb) {
-        if (!authorize && !cb) {
-            cb = nexus;
-            authorize = false;
-            nexus = null;
-        } else if (nexus instanceof Array && !cb) {
-            cb = authorize;
-            authorize = false;
-        } else if (typeof nexus == 'boolean' && !cb) {
-            cb = authorize;
-            authorize = nexus;
-            nexus = null;
-        }
+    // Router.prototype.define = function (name, nexus, authorize, cb) {
+    Router.prototype.define = function (config) {
+        var authorize = config.authorize || false;
+        var onEnter = config.onEnter || false;
+        var path = config.path;
+        var nexus = config.nexus;
+        var page = config.page;
+
+        if (page == undefined)
+            throw "please aim which one page are used to render for this path";
+
+        if (path == undefined)
+            throw "path is a necessary argument";
 
         var self = this;
         var components = {};
@@ -104,24 +104,16 @@ define('route', ['engine'], function (xjs) {
         }
 
         this.map.forEach(function (map) {
-            if (map.quote == name) {
+            if (map.quote == path) {
                 map.authorize = authorize;
                 map.nexus = components;
-                map.fn = cb;
+                map.page = page;
+                map.events = {
+                    onEnter: onEnter
+                };
+                return true;
             }
         });
-
-        // this.definemap[name] = {
-        //     Func: cb,
-        //     authorize: authorize,
-        //     nexus: nexus
-        // };
-
-        // for (var way in this.map) {
-        //     route = this.map[way];
-        //     if (route.quote == name)
-        //         return this.definemap[name].rule = route.rule;
-        // }
     };
 
     /**
@@ -148,20 +140,54 @@ define('route', ['engine'], function (xjs) {
      * //提换当前路由历史记录
      * router.navigator('#home', {}, true);
      */
-    Router.prototype.navigator = function (hash, state, replaceHash) {
-        var hash = hash || '#home/',
-            state = state || {};
+    // Router.prototype.navigator = function (hash, state, replaceHash) {
+    Router.prototype.navigator = function (param) {
+        param = param || {};
 
-        var route = matchRoute.call(this, hash, this.map);
+        var self = this,
+            to, from, currentRoute, route;
+
+        var url = tool.url();
+        currentRoute = matchRoute.call(this, url.hash);
+
+        route = matchRoute.call(this, param.path);
 
         if (route == false)
-            throw "this route is not existing";
+            throw "this path is not exist";
 
-        history[replaceHash ? 'replaceState' : 'pushState'](state, null, hash);
+        to = {
+            path: param.path,
+            param: param.path.match(route.rule).slice(1),
+            query: param.query
+        };
 
-        renderComponents.call(this, route).then(function () {
-            route.fn.apply(null, route.params);
-        });
+        from = url.hash == param.path ? {} : {
+            path: url.hash,
+            param: url.hash.match(currentRoute.rule).slice(1),
+            query: url.query
+        };
+
+        if (route.events.onEnter) {
+            route.events.onEnter(to, from, function (next) {
+                if (next == to) {
+                    end();
+                } else {
+                    self.navigator(next);
+                }
+            });
+        } else {
+            end();
+        }
+
+        function end() {
+            history[param.replaceHash ? 'replaceState' : 'pushState'](null, null, '#' + to.path);
+
+            renderComponents.call(self, route).then(function () {
+                xjs.createView(route.page, {
+                    router: to
+                });
+            });
+        }
     };
 
     /**
@@ -174,15 +200,22 @@ define('route', ['engine'], function (xjs) {
         var that = this;
 
         function onHashChange(e) {
-            var param = [];
-            if (location.hash) {
-                param.push(location.hash);
-                if (e && e.isTrusted) {
-                    param.push(null, true);
-                }
-                that.navigator.apply(that, param);
+            // var param = [];
+            var url = tool.url();
+            if (url.hash) {
+                // param.push(location.hash);
+                // if (e && e.isTrusted) {
+                //     param.push(null, true);
+                // }
+                // that.navigator.apply(that, param);
+                that.navigator({
+                    path: url.hash,
+                    query: url.query
+                })
             } else {
-                that.navigator('#home/', null, true);
+                that.navigator({
+                    path: 'home/'
+                });
             }
         }
 
@@ -201,7 +234,8 @@ define('route', ['engine'], function (xjs) {
      * @param {String} hash
      * @param {Object} router.map
      */
-    function matchRoute(hash, map) {
+    function matchRoute(hash) {
+        var map = this.map;
         var path = verify(hash, map);
         var self = this;
 
@@ -211,11 +245,9 @@ define('route', ['engine'], function (xjs) {
         if (path.authorize && !xjs.getUserInfo()) {
             getAuthorization.call(self, hash);
         } else {
-            return {
-                nexus: path.nexus,
-                fn: path.fn,
+            return $.extend({}, path, {
                 param: hash.match(path.rule).slice(1)
-            }
+            })
         }
     }
 

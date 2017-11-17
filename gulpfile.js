@@ -58,7 +58,7 @@ gulp.task('importTemplate', function () {
 
 gulp.task('includeTemplate', ['importTemplate'], function () {
     var manifest = gulp.src("rev-manifest.json");
-    return gulp.src([src + 'js/Page.*.js', src + 'js/ui/*.js'], {base: src})
+    return gulp.src([src + 'js/Page.*.js', '!' + src + 'js/app.js', '!' + src + 'js/router.js'], {base: src})
         .pipe(importTemplates(/__include\('(.*)'\)/g, function (str, src) {
             src = __dirname.replace(/\\/g, '/') + '/dev/cache/' + src;
             return fs.existsSync(src) ? JSON.stringify(fs.readFileSync(src).toString()) : 'undefined';

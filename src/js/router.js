@@ -14,8 +14,8 @@ define('router', ['engine', 'route'], function (xjs, Route) {
      * @see module:router#setup
      */
     xjs.router.setup({
-        '#home/': 'Home',
-        '#test/': 'Test'
+        'home/': 'Home',
+        'test/': 'Test'
     }, {
         before: function (hash, params) {},
         fail: function () {}
@@ -40,11 +40,19 @@ define('router', ['engine', 'route'], function (xjs, Route) {
      * @memberOf xjs/router
      * @see module:router#define
      */
-    xjs.router.define('Home', ["sideBar", "Test"], function () {
-        xjs.createView('Page.Home', {finalStep: true});
+
+    xjs.router.define({
+        path: 'Home',
+        nexus: ["sideBar", "Test"],
+        page: "Page.Home",
+        onEnter: function (to, from, next) {
+            next(to);
+        }
     });
 
-    xjs.router.define('Test', ["sideBar"], function () {
-        xjs.createView('Page.Test', {finalStep: true});
+    xjs.router.define({
+        path: 'Test',
+        nexus: ["sideBar"],
+        page: "Page.Test"
     });
 });

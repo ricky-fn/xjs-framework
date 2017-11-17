@@ -18,15 +18,16 @@ define('tool', ['zepto'], function ($) {
                     qu = url.match(/^\?[^#]+/i)[0];
                 }
             }
+            var param = (qu || '').slice(1);
             url = {
                 domain: dm,
-                query: (qu || '').slice(1),
+                // query: (qu || '').slice(1),
                 hash: (hs || '').slice(1),
-                param: {},
+                query: {},
                 toString: function() {
                     var key, ref, val;
                     qu = '';
-                    ref = this.param;
+                    ref = this.query;
                     for (key in ref) {
                         val = ref[key];
                         qu += key;
@@ -41,9 +42,9 @@ define('tool', ['zepto'], function ($) {
                     return this.domain + qu + hs;
                 }
             };
-            if (url.query) {
-                url.query.replace(/(?:^|&)([^=&]+)(?:=([^&]*))?/gi, function(a, b, d) {
-                    return url.param[b] = d;
+            if (param) {
+                param.replace(/(?:^|&)([^=&]+)(?:=([^&]*))?/gi, function(a, b, d) {
+                    return url.query[b] = d;
                 });
             }
             return url;
