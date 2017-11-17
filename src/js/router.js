@@ -45,7 +45,7 @@ define('router', ['engine', 'route'], function (xjs, Route) {
         path: 'Home',
         nexus: ["sideBar", "Test"],
         page: "Page.Home",
-        onEnter: function (to, from, next) {
+        beforeEnter: function (to, from, next) {
             next(to);
         }
     });

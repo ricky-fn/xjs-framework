@@ -83,7 +83,6 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
     // Router.prototype.define = function (name, nexus, authorize, cb) {
     Router.prototype.define = function (config) {
         var authorize = config.authorize || false;
-        var onEnter = config.onEnter || false;
         var path = config.path;
         var nexus = config.nexus;
         var page = config.page;
@@ -109,7 +108,7 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
                 map.nexus = components;
                 map.page = page;
                 map.events = {
-                    onEnter: onEnter
+                    beforeEnter: config.beforeEnter
                 };
                 return true;
             }
@@ -167,8 +166,8 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
             query: url.query
         };
 
-        if (route.events.onEnter) {
-            route.events.onEnter(to, from, function (next) {
+        if (route.events.beforeEnter) {
+            route.events.beforeEnter(to, from, function (next) {
                 if (next == to) {
                     end();
                 } else {
