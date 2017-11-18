@@ -168,7 +168,7 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             f = n.replace(/\s/g, "").split(';').slice(0, -1);
             for (j = 0; j < f.length; j++) {
                 var event = f[j].split(':');
-                dom.on(event[0], xjs.hitch(this, this[event[1]]));
+                dom.on(event[0], this[event[1]].bind(this));
             }
         }
         return true;
@@ -182,8 +182,8 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
             delete param[i].app;
 
-            xjs.load(param[i]).then(function (reslute, key) {
-                this.data[key] = reslute;
+            xjs.load(param[i]).then(function(key, result) {
+                this.data[key] = reslut;
                 count += 1;
                 if (count == param.length) dtd.resolve();
             }.bind(this, name));
