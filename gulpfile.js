@@ -58,7 +58,7 @@ gulp.task('importTemplate', function () {
 
 gulp.task('includeTemplate', ['importTemplate'], function () {
     var manifest = gulp.src("rev-manifest.json");
-    return gulp.src([src + 'js/Page.*.js', '!' + src + 'js/app.js', '!' + src + 'js/router.js'], {base: src})
+    return gulp.src([src + 'js/*.js', '!' + src + 'js/router.js', '!' + src + 'js/app.js'], {base: src})
         .pipe(importTemplates(/__include\('(.*)'\)/g, function (str, src) {
             src = __dirname.replace(/\\/g, '/') + '/dev/cache/' + src;
             return fs.existsSync(src) ? JSON.stringify(fs.readFileSync(src).toString()) : 'undefined';
@@ -88,7 +88,7 @@ gulp.task('optimizeJS', ['includeTemplate'], function () {
     var pagePromise = new Promise(function (resolve) {
         fs.readdir('dev/cache/js', function (err, files) {
             files.forEach(function (val) {
-                if (/^Page/.test(val))
+                if (/^[Page|ui]/.test(val))
                     include.push(__dirname.replace(/\\/g,'/') + '/dev/cache/js/' + val);
             });
             resolve();
@@ -191,6 +191,7 @@ gulp.task('sass', function(cb) {
                     .pipe(gulpIf(revStatus, revReplace({manifest: manifest})))
                     .pipe(gulpIf(revStatus, rev()))
                     .pipe(gulp.dest(dest + 'assets/css/'))
+                    .pipe(browserSync.stream())
                     .on('end', cb)
                     .pipe(gulpIf(revStatus, rev.manifest({
                         base: dest,
@@ -241,13 +242,12 @@ gulp.task('clean:surplus', function() {
 gulp.task('server', function() {
     browserSync.init({
         ui: false,
-        server: {
-            baseDir: "./dev/"
-        }
+        proxy: "http://127.0.0.1:5000",
+        port: 81
     });
 
     gulp.watch(src + 'sass/*.scss', function() {
-        sequence('sass', reload);
+        sequence('sass');
     });
     gulp.watch(src + 'images/**/*.{png,jpg,gif}', function() {
         sequence('imagemin', reload);

@@ -8,6 +8,7 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
         this.componentSequence = {};
         this.map = [];
         this._currentNexus = false;
+        this.history = [];
     }
 
     // Router.prototype.definemap = {};
@@ -144,49 +145,51 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
         param = param || {};
 
         var self = this,
-            to, from, currentRoute, route;
-
-        var url = tool.url();
-        currentRoute = matchRoute.call(this, url.hash);
+            to, from, route;
 
         route = matchRoute.call(this, param.path);
 
         if (route == false)
             throw "this path is not exist";
 
+        var fullPath = getFullPath(param);
+
         to = {
             path: param.path,
             param: param.path.match(route.rule).slice(1),
-            query: param.query
+            query: param.query,
+            fullPath: fullPath
         };
 
-        from = url.hash == param.path ? {} : {
-            path: url.hash,
-            param: url.hash.match(currentRoute.rule).slice(1),
-            query: url.query
-        };
+        from = this.history[this.history.length];
 
         if (route.events.beforeEnter) {
             route.events.beforeEnter(to, from, function (next) {
                 if (next == to) {
-                    end();
+                    end.call(this);
                 } else {
                     self.navigator(next);
                 }
             });
         } else {
-            end();
+            end.call(this);
         }
 
         function end() {
-            history[param.replaceHash ? 'replaceState' : 'pushState'](null, null, '#' + to.path);
+            if (param.replaceHash) {
+                this.history.pop().push(to);
+                history.replaceState(null, null, to.fullPath);
+            } else {
+                this.history.push(to);
+                history.pushState(null, null, to.fullPath);
+            }
 
             renderComponents.call(self, route).then(function () {
                 xjs.createView(route.page, {
                     router: to
                 });
             });
-        }
+        };
     };
 
     /**
@@ -209,7 +212,8 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
                 // that.navigator.apply(that, param);
                 that.navigator({
                     path: url.hash,
-                    query: url.query
+                    query: url.query,
+                    fullPath: url.toString()
                 })
             } else {
                 that.navigator({
@@ -287,17 +291,17 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
     function filterComponents(nexus) {
         var length = Object.keys(nexus);
         var currentNexus = this._currentNexus;
+
         if (length == 0) {
             xjs.destroyView();
-            currentNexus = false;
+            this._currentNexus = false;
             return nexus;
         } else {
             if (!currentNexus) {
                 xjs.destroyView();
-                currentNexus = nexus;
+                this._currentNexus = nexus;
                 return nexus;
             } else {
-                debugger;
                 findAbandonedItem(nexus, currentNexus).forEach(function (key) {
                     xjs.destroyView(currentNexus[key].id);
                     delete currentNexus[key].id;
@@ -375,6 +379,19 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
         });
 
         return items;
+    }
+
+    function getFullPath(param) {
+        if (param.query == undefined)
+            return '';
+
+        var fullPath = '#' + param.path + '?';
+        Object.keys(param.query).forEach(function (key, index) {
+            fullPath += key + '=' + param.query[key];
+            if (index != Object.keys(param.query).length - 1)
+                fullPath += '&';
+        });
+        return fullPath;
     }
 
     return Router;

@@ -39,7 +39,7 @@ define('tool', ['zepto'], function ($) {
                         qu = '?' + qu;
                     }
                     hs = this.hash ? '#' + this.hash : '';
-                    return this.domain + qu + hs;
+                    return hs + qu;
                 }
             };
             if (param) {
