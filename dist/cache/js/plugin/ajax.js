@@ -1,6 +1,16 @@
-import $ from "../lib/zepto.js"
+'use strict';
 
-const cache = {};
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _zepto = require('../lib/zepto.js');
+
+var _zepto2 = _interopRequireDefault(_zepto);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var cache = {};
 /**
  * @fileOverview 数据请求模块，用于ajax数据请求，此插件在zepto的ajax函数上封装了一些功能。根据后端返回的code代号或失败，在错误的code代码下将会在后台处理。<br>
  *     注意此模块利用了zepto的`deferred`对象处理回调信息，请在实例化后利用`then`方法处理回调函数。<br>
@@ -47,7 +57,7 @@ const cache = {};
  *   console.log(result); //result == {code:5, msg: "数据错误", content: {}};
  * });
  */
-var load = function (data) {
+var load = function load(data) {
     var param = _.extend({
         skipError: false, //将错误信息交给回调执行
         offAnimate: false, //关闭动画效果
@@ -67,10 +77,10 @@ var load = function (data) {
     delete param.showShadow;
     delete param.useCache;
 
-    var wait = function () {
-        var dtd = $.Deferred();
-        if (!useCache || (useCache && !cache[param.url])) {
-            $.ajax(param).then(function (result) {
+    var wait = function wait() {
+        var dtd = _zepto2.default.Deferred();
+        if (!useCache || useCache && !cache[param.url]) {
+            _zepto2.default.ajax(param).then(function (result) {
                 if (result.code != '0' && !skipError) return dtd.reject(result.code, result.msg);
                 if (useCache) cache[param.url] = result;
                 dtd.resolve(skipError ? result : result.content);
@@ -87,9 +97,9 @@ var load = function (data) {
         }
         return dtd.promise();
     };
-    return $.when(wait()).fail(function (code, error) {
+    return _zepto2.default.when(wait()).fail(function (code, error) {
         alert(error);
     });
 };
 
-export default load;
+exports.default = load;

@@ -1,12 +1,22 @@
-import $ from "zepto-modules/_default";
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _default = require('zepto-modules/_default');
+
+var _default2 = _interopRequireDefault(_default);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * 框架的方法集合，是全局公用对象
  * @namespace xjs
  */
-const xjs = window.xjs = {};
+var xjs = window.xjs = {};
 
-const _instances = xjs._instances = {};
+var _instances = xjs._instances = {};
 
 /**
  * 销毁一个Page类，并触发onExit事件
@@ -25,9 +35,8 @@ xjs.destroyView = function (id) {
         obj = _instances;
     }
 
-    $.each(obj, function (name, widget) {
-        if (widget.keepInside)
-            return;
+    _default2.default.each(obj, function (name, widget) {
+        if (widget.keepInside) return;
 
         widget.onExit();
         delete _instances[name];
@@ -46,23 +55,22 @@ xjs.destroyView = function (id) {
  * @see xjs.declare
  */
 xjs.createView = function (prop, param, node, defaultNode) {
-    let containerNode = document.getElementById('appview');
+    var containerNode = document.getElementById('appview');
 
     if (!node) {
         node = document.createElement('div');
-        $(containerNode).append(node);
+        (0, _default2.default)(containerNode).append(node);
     } else {
         if (!defaultNode) {
-            node = $('<div></div>').appendTo(node).get(0);
+            node = (0, _default2.default)('<div></div>').appendTo(node).get(0);
         } else {
-            node = $(node).get(0);
+            node = (0, _default2.default)(node).get(0);
         }
     }
 
-
-    return new Promise((resolve, reject) => {
+    return new Promise(function (resolve, reject) {
         try {
-            let instance = mixinProp(prop, param);
+            var instance = mixinProp(prop, param);
             instance.init(node, function () {
                 resolve(instance);
             });
@@ -97,20 +105,17 @@ function mixinProp(parentClass, prop) {
     var prototype = Object.create(parentClass);
 
     for (var name in prop) {
-        prototype[name] = typeof prop[name] == "function" &&
-        typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-            (function (name, fn) {
-                return function () {
-                    var tmp = this._super;
-                    this._super = _super[name];
-                    var ret = fn.apply(this, arguments);
-                    this._super = tmp;
-                    return ret;
-                };
-            })(name, prop[name]) :
-            prop[name];
+        prototype[name] = typeof prop[name] == "function" && typeof _super[name] == "function" && fnTest.test(prop[name]) ? function (name, fn) {
+            return function () {
+                var tmp = this._super;
+                this._super = _super[name];
+                var ret = fn.apply(this, arguments);
+                this._super = tmp;
+                return ret;
+            };
+        }(name, prop[name]) : prop[name];
     }
     return prototype;
 }
 
-export default xjs;
+exports.default = xjs;

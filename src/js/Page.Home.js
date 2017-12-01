@@ -1,9 +1,10 @@
-define('Page.Home', ['engine', 'widget'], function (xjs, base) {
-    var declare = xjs.declare;
+import base from "./core/widget.js";
+import xjs from "./core/engine.js";
 
-    return declare('Page.Home', base, {
-        title: '首页',
-        templateString: __include('pages/Page.Home.html'),
-        baseClass: 'page-home fade in'
-    });
+let Page = xjs.declare(base, {
+    title: '首页',
+    templateString: __include("../pages/Page.Home.html"),
+    baseClass: 'page-home fade in'
 });
+
+export default Page;

@@ -1585,3 +1585,5 @@ window.$ === undefined && (window.$ = Zepto)
     }
   }
 })(Zepto);
+
+export default Zepto;

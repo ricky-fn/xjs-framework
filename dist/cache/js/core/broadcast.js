@@ -1,11 +1,16 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 var sequence = {};
 
-var broadcast = function (conf) {
+var broadcast = function broadcast(conf) {
     var self = this;
     if (this instanceof broadcast) {
         if (conf instanceof Array) {
             conf.forEach(function (v) {
-                broadcast[v,method].call(self, v.name, v.assignee, v.fn);
+                broadcast[(v, method)].call(self, v.name, v.assignee, v.fn);
             });
         } else {
             broadcast[conf.method].call(this, conf.name, conf.assignee, conf.fn);
@@ -15,23 +20,22 @@ var broadcast = function (conf) {
     }
 };
 
-broadcast.add = function(name, assignee, fn) {
+broadcast.add = function (name, assignee, fn) {
     var target = sequence[name];
 
     if (target !== undefined) {
         target.members.forEach(function (member) {
-            if (member.assignee == assignee)
-                throw "'" + assignee + "' already existed in '" + name + "' event"
+            if (member.assignee == assignee) throw "'" + assignee + "' already existed in '" + name + "' event";
         });
-        target.members.push({assignee: assignee, fn: fn});
+        target.members.push({ assignee: assignee, fn: fn });
     } else {
         sequence[name] = {
-            members: [{assignee: assignee, fn: fn}]
+            members: [{ assignee: assignee, fn: fn }]
         };
     }
 };
 
-broadcast.trigger = function(name) {
+broadcast.trigger = function (name) {
     var params = [].slice.call(arguments, 1, arguments.length);
     var target = sequence[name];
 
@@ -46,13 +50,12 @@ broadcast.trigger = function(name) {
     });
 };
 
-broadcast.remove = function(name, assignee) {
+broadcast.remove = function (name, assignee) {
     var target = sequence[name];
 
     if (target !== undefined) {
         target.members.forEach(function (member, index) {
-            if (member.assignee == assignee)
-                target.members.splice(index, 1);
+            if (member.assignee == assignee) target.members.splice(index, 1);
         });
     } else {
         target.members = [];
@@ -61,4 +64,4 @@ broadcast.remove = function(name, assignee) {
 
 broadcast.prototype = broadcast.prototype.constructor;
 
-export default broadcast;
+exports.default = broadcast;

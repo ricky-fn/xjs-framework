@@ -1,5 +1,18 @@
-import xjs from "./engine"
-import $ from "zepto-modules/_default";
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _engine = require("./engine");
+
+var _engine2 = _interopRequireDefault(_engine);
+
+var _default = require("zepto-modules/_default");
+
+var _default2 = _interopRequireDefault(_default);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义<br>
@@ -11,20 +24,22 @@ import $ from "zepto-modules/_default";
  * `init—>render—>request—>syncGetData—>buildRender—>startup—>onExit`
  * @mixin widget
  */
-let widget = xjs.declare({
+var widget = _engine2.default.declare({
     /**
      * Page类的初始化函数，同时控制渲染事件的执行流程，此方法不可以被重写。
      * @memberOf widget
      * @function init
      * @param dom 根Dom节点，用于插入模板
      */
-    init: function (dom, callback) {
-        this.domNode = this.domNode || (this.$domNode = $(dom)).get(0);
+    init: function init(dom, callback) {
+        var _this = this;
+
+        this.domNode = this.domNode || (this.$domNode = (0, _default2.default)(dom)).get(0);
 
         this.render();
 
-        this.syncGetData().then(() => {
-            this.buildRender();
+        this.syncGetData().then(function () {
+            _this.buildRender();
             // if (!this.finalStep) {
             //     xjs.broadcast.trigger('widgetReady', this.routeEventName);
             // } else {
@@ -35,12 +50,12 @@ let widget = xjs.declare({
              * @memberOf widget
              * @function startup
              */
-            this.startup && this.startup();
+            _this.startup && _this.startup();
             callback && callback();
         });
         return this;
     },
-    render: function () {
+    render: function render() {
         /**
          * 定义Page的标题
          *
@@ -58,7 +73,9 @@ let widget = xjs.declare({
          */
         this.id = this.domNode.id;
     },
-    syncGetData: function () {
+    syncGetData: function syncGetData() {
+        var _this2 = this;
+
         /**
          * request函数用于设置需要预先请求的数据队列，所有队列请求成功后才会执行后面的流程。
          * 对zepto的ajax模块进行了二次封装，所有参数和$.ajax一致。ajax返回的数据将会根据app的名字挂载到this.data下
@@ -85,11 +102,10 @@ let widget = xjs.declare({
          * }
          */
         var sequence = this.request ? this.request() : false;
-        let dtd = new Promise(resolve => {
-            if (!sequence)
-                return resolve();
+        var dtd = new Promise(function (resolve) {
+            if (!sequence) return resolve();
 
-            processSequence.call(this, resolve, sequence);
+            processSequence.call(_this2, resolve, sequence);
         });
 
         return dtd;
@@ -105,7 +121,7 @@ let widget = xjs.declare({
      * @function buildRender
      * @see {widget#request}
      */
-    buildRender: function () {
+    buildRender: function buildRender() {
         /**
          * Page类的CSS Class Name
          *
@@ -132,7 +148,7 @@ let widget = xjs.declare({
      * @memberOf widget
      * @function onExit
      */
-    onExit: function () {
+    onExit: function onExit() {
         this.$domNode.off().remove();
     }
 });
@@ -142,11 +158,11 @@ function __createNode() {
     doms = this.domNode.querySelectorAll('[data-xjs-element]');
     doms = Array.prototype.slice.call(doms);
     for (i = 0; i < doms.length; i++) {
-        dom = $(doms[i]);
+        dom = (0, _default2.default)(doms[i]);
         parents = dom.parents('[data-xjs-mixin]');
         if (parents.length && parents[0] != this.domNode) break;
         n = dom.data('xjs-element');
-        this[n] = ( this['$' + n] = dom ).get(0);
+        this[n] = (this['$' + n] = dom).get(0);
     }
     return true;
 }
@@ -158,11 +174,10 @@ function __createEvent() {
     if (this.$domNode.data('xjs-event')) doms.push(this.domNode);
     for (i = 0; i < doms.length; i++) {
         var f, j;
-        dom = $(doms[i]);
+        dom = (0, _default2.default)(doms[i]);
         parents = dom.parents('[data-xjs-mixin]');
 
-        if (parents.length && parents[0] != this.domNode)
-            break;
+        if (parents.length && parents[0] != this.domNode) break;
 
         n = dom.data('xjs-event');
         f = n.replace(/\s/g, "").split(';').slice(0, -1);
@@ -181,20 +196,22 @@ function __createEvent() {
 }
 
 function processSequence(resolve, param) {
-    var param = param instanceof Array ? param : [param], i, name, count = 0;
+    var param = param instanceof Array ? param : [param],
+        i,
+        name,
+        count = 0;
     this.data = this.data || {};
     for (i = 0; i < param.length; i++) {
         name = param[i].app;
         if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
         delete param[i].app;
 
-        xjs.load(param[i]).then(function (key, result) {
+        _engine2.default.load(param[i]).then(function (key, result) {
             this.data[key] = result;
             count += 1;
-            if (count == param.length)
-                resolve();
+            if (count == param.length) resolve();
         }.bind(this, name));
     }
 }
 
-export default widget;
+exports.default = widget;

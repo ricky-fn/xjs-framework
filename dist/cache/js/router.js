@@ -1,7 +1,20 @@
-import Route from "./core/route.js"
-import Home from "./Page.Home.js"
+"use strict";
 
-const Router = new Route();
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _route = require("./core/route.js");
+
+var _route2 = _interopRequireDefault(_route);
+
+var _PageHome = require("./Page.Home.js");
+
+var _PageHome2 = _interopRequireDefault(_PageHome);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Router = new _route2.default();
 
 /**
  * 路由映射表定义
@@ -10,8 +23,8 @@ const Router = new Route();
  * @see module:router#setup
  */
 Router.setup({
-    'home/': 'Home',
-    'test/': 'Test'
+  'home/': 'Home',
+  'test/': 'Test'
 });
 
 // xjs.router.component({
@@ -35,8 +48,8 @@ Router.setup({
  */
 
 Router.define({
-    path: 'Home',
-    page: Home
+  path: 'Home',
+  page: _PageHome2.default
 });
 
-export default Router;
+exports.default = Router;
