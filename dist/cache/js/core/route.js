@@ -1,5 +1,18 @@
-import tool from "../plugin/tool.js"
-import $ from "zepto-modules/"
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _tool = require("../plugin/tool.js");
+
+var _tool2 = _interopRequireDefault(_tool);
+
+var _zeptoModules = require("zepto-modules/");
+
+var _zeptoModules2 = _interopRequireDefault(_zeptoModules);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * 路由模块
@@ -88,11 +101,9 @@ Router.prototype.define = function (config) {
     var nexus = config.nexus;
     var page = config.page;
 
-    if (page == undefined)
-        throw "please aim which one page are used to render for this path";
+    if (page == undefined) throw "please aim which one page are used to render for this path";
 
-    if (path == undefined)
-        throw "path is a necessary argument";
+    if (path == undefined) throw "path is a necessary argument";
 
     var self = this;
     var components = {};
@@ -145,12 +156,13 @@ Router.prototype.navigator = function (param) {
     param = param || {};
 
     var self = this,
-        to, from, route;
+        to,
+        from,
+        route;
 
     route = matchRoute.call(this, param.path);
 
-    if (route == false)
-        throw "this path is not exist";
+    if (route == false) throw "this path is not exist";
 
     var fullPath = getFullPath(param);
 
@@ -203,7 +215,7 @@ Router.prototype.start = function () {
 
     function onHashChange(e) {
         // var param = [];
-        var url = tool.url();
+        var url = _tool2.default.url();
         if (url.hash) {
             // param.push(location.hash);
             // if (e && e.isTrusted) {
@@ -214,7 +226,7 @@ Router.prototype.start = function () {
                 path: url.hash,
                 query: url.query,
                 fullPath: url.toString()
-            })
+            });
         } else {
             that.navigator({
                 path: 'home/'
@@ -242,15 +254,14 @@ function matchRoute(hash) {
     var path = verify(hash, map);
     var self = this;
 
-    if (!path)
-        return false;
+    if (!path) return false;
 
     if (path.authorize && !xjs.getUserInfo()) {
         getAuthorization.call(self, hash);
     } else {
-        return $.extend({}, path, {
+        return _zeptoModules2.default.extend({}, path, {
             param: hash.match(path.rule).slice(1)
-        })
+        });
     }
 }
 
@@ -261,7 +272,7 @@ function matchRoute(hash) {
  * @param hash
  */
 function getAuthorization(hash) {
-    this.navigator('#login/', {backHash: hash}, true);
+    this.navigator('#login/', { backHash: hash }, true);
 }
 
 /**
@@ -277,8 +288,7 @@ function verify(hash, map) {
     for (var obj in map) {
         path = map[obj];
 
-        if (hash.match(path.rule))
-            return path;
+        if (hash.match(path.rule)) return path;
     }
     return false;
 }
@@ -324,8 +334,8 @@ function renderComponents(route) {
     var self = this;
 
     Object.keys(renderTeam).forEach(function (name) {
-        let def = new Promise((resolve) => {
-            setTimeout(function() {
+        var def = new Promise(function (resolve) {
+            setTimeout(function () {
                 self.componentSequence[name].render(function (instance) {
                     self.componentSequence[name].id = instance.id;
                     resolve();
@@ -344,11 +354,9 @@ function findAbandonedInstance(oldNexus) {
     for (var obj in xjs._instances) {
         mark = false;
         for (var item in oldNexus) {
-            if (oldNexus[item].id == xjs._instances[obj].id)
-                mark = true;
+            if (oldNexus[item].id == xjs._instances[obj].id) mark = true;
         }
-        if (mark == false)
-            ids.push(xjs._instances[obj].id);
+        if (mark == false) ids.push(xjs._instances[obj].id);
     }
 
     return ids;
@@ -383,16 +391,14 @@ function findAddedItem(nexus, oldNexus) {
 }
 
 function getFullPath(param) {
-    if (param.query == undefined)
-        return '';
+    if (param.query == undefined) return '';
 
     var fullPath = '#' + param.path + '?';
     Object.keys(param.query).forEach(function (key, index) {
         fullPath += key + '=' + param.query[key];
-        if (index != Object.keys(param.query).length - 1)
-            fullPath += '&';
+        if (index != Object.keys(param.query).length - 1) fullPath += '&';
     });
     return fullPath;
 }
 
-export default Router;
+exports.default = Router;
