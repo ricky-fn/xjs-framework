@@ -1,9 +1,8 @@
-import $ from "zepto-modules/_default";
-
 /**
  * 框架的方法集合，是全局公用对象
  * @namespace xjs
  */
+
 const xjs = window.xjs = {};
 
 const _instances = xjs._instances = {};

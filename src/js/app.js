@@ -2,7 +2,7 @@ import xjs from "./core/engine.js"
 import broadcast from "./core/broadcast.js"
 import router from "./router.js"
 import tool from "./plugin/tool.js"
-import $ from "zepto-modules/"
+import "../sass/app.scss"
 
 /**
  * 路由模块
@@ -37,7 +37,7 @@ xjs.tool = tool;
  */
 xjs.broadcast = broadcast;
 
-$(function () {
+$(() => {
     /**
      * 启动路由
      * @method start

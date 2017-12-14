@@ -1,8 +1,7 @@
 import Route from "./core/route.js"
-import Home from "./Page.Home.js"
+import Home from "./views/Page.Home.js"
 
 const Router = new Route();
-
 /**
  * 路由映射表定义
  * @method setup
@@ -37,6 +36,14 @@ Router.setup({
 Router.define({
     path: 'Home',
     page: Home
+});
+
+const path = require('path');
+const context = require.context("./views", false, /\.js$/);
+const modules = {};
+context.keys().forEach(key => {
+    var module = context(key);
+    modules[key] = module;
 });
 
 export default Router;
