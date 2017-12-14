@@ -1,6 +1,3 @@
-import xjs from "./engine"
-import $ from "zepto-modules/_default";
-
 /**
  * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义<br>
  * 所有Page类通过[xjs.declare]{@link xjs.declare}申明，并将[widget]{@link widget}作为`parents`参数传入，用以继承默认事件流程。<br>
@@ -11,6 +8,7 @@ import $ from "zepto-modules/_default";
  * `init—>render—>request—>syncGetData—>buildRender—>startup—>onExit`
  * @mixin widget
  */
+
 let widget = xjs.declare({
     /**
      * Page类的初始化函数，同时控制渲染事件的执行流程，此方法不可以被重写。
@@ -122,7 +120,7 @@ let widget = xjs.declare({
          * @name templateString
          */
         if (this.templateString) {
-            this.domNode.innerHTML = this.templateString;
+            this.domNode.innerHTML = this.templateString(this.data);
         }
         __createNode.call(this) && __createEvent.call(this);
     },
