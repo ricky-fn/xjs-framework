@@ -1,3 +1,4 @@
+import dataQueue from "./sequnce"
 /**
  * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义<br>
  * 所有Page类通过[xjs.declare]{@link xjs.declare}申明，并将[widget]{@link widget}作为`parents`参数传入，用以继承默认事件流程。<br>
@@ -9,36 +10,15 @@
  * @mixin widget
  */
 
-let widget = xjs.declare({
+class widget {
     /**
      * Page类的初始化函数，同时控制渲染事件的执行流程，此方法不可以被重写。
      * @memberOf widget
      * @function init
      * @param dom 根Dom节点，用于插入模板
      */
-    init: function (dom, callback) {
-        this.domNode = this.domNode || (this.$domNode = $(dom)).get(0);
-
-        this.render();
-
-        this.syncGetData().then(() => {
-            this.buildRender();
-            // if (!this.finalStep) {
-            //     xjs.broadcast.trigger('widgetReady', this.routeEventName);
-            // } else {
-            //     xjs.broadcast.trigger('allWidgetReady', this.routeEventName);
-            // }
-            /**
-             * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
-             * @memberOf widget
-             * @function startup
-             */
-            this.startup && this.startup();
-            callback && callback();
-        });
-        return this;
-    },
-    render: function () {
+    constructor(dom, call) {
+        catchNode.call(this, dom, 'domNode');
         /**
          * 定义Page的标题
          *
@@ -46,52 +26,33 @@ let widget = xjs.declare({
          * @memberOf widget
          * @name title
          */
-        document.title = this.title || document.title;
-        /**
-         * 实例化后的Page类id，此id是唯一的，可以用于`xjs.byId`获取到`This`对象
-         *
-         * @type {string}
-         * @memberOf widget
-         * @name id
-         */
-        this.id = this.domNode.id;
-    },
-    syncGetData: function () {
-        /**
-         * request函数用于设置需要预先请求的数据队列，所有队列请求成功后才会执行后面的流程。
-         * 对zepto的ajax模块进行了二次封装，所有参数和$.ajax一致。ajax返回的数据将会根据app的名字挂载到this.data下
-         * @memberOf widget
-         * @function request
-         * @example
-         * request: function() {
-         *     return {
-         *         app: 'name', //在request之后的函数中可以用this.data.name获取到数据
-         *         url: 'example.do',
-         *         data: {}
-         *     }
-         * }
-         * //或者
-         * request: function() {
-         *     return [{
-         *         app: 'app1', //在request之后的函数中可以用this.data.app1获取到数据
-         *         url: 'example.do',
-         *         data: {}
-         *     }, {
-         *         app: 'app2',
-         *         url: 'test.do'
-         *     }]
-         * }
-         */
-        var sequence = this.request ? this.request() : false;
-        let dtd = new Promise(resolve => {
-            if (!sequence)
-                return resolve();
+        setTitle(this.title || document.title);
 
-            processSequence.call(this, resolve, sequence);
+        this.postRequest(() => {
+            this.buildRender();
+            /**
+             * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
+             * @memberOf widget
+             * @function startup
+             */
+            this.startup && this.startup();
+            call && call();
         });
+        return this;
+    }
+    postRequest(call) {
+        let request = this.request ? this.request() : false;
+        dataQueue(request).then(data => {
+            this.data = data;
+            call();
+        }).catch(error => {
+            if (xjs.router.history.length == 1) {
+                throw "Request failed with status code 404 in " + error.config.url;
+            } else {
 
-        return dtd;
-    },
+            }
+        });
+    }
     /**
      * 模板渲染流程，将会把this对象作为数据采集对象传入模板。并扫描模板里的自定义锚点后映射到this对象上<br>
      * [data-xjs-element] 将挂载到this对象上，并通过$ + name 用以区分普通dom对象和jquery对象
@@ -103,7 +64,7 @@ let widget = xjs.declare({
      * @function buildRender
      * @see {widget#request}
      */
-    buildRender: function () {
+    buildRender() {
         /**
          * Page类的CSS Class Name
          *
@@ -123,17 +84,26 @@ let widget = xjs.declare({
             this.domNode.innerHTML = this.templateString(this.data);
         }
         __createNode.call(this) && __createEvent.call(this);
-    },
+    }
     /**
      * Page的退出事件，在路由切换被触发时调用，如果有添加事件监听需要自行注销，应该写在这个事件里，
      * 如果你复写了这个函数，别忘了在function末尾调用this._super()
      * @memberOf widget
      * @function onExit
      */
-    onExit: function () {
-        this.$domNode.off().remove();
+    onExit() {
+        this.$domNode.remove();
     }
-});
+}
+
+function catchNode(dom, name) {
+    this['$' + name] = $(dom);
+    this[name] = dom;
+}
+
+function setTitle(title) {
+    document.title = title;
+}
 
 function __createNode() {
     var doms, dom, parents, n, i;
@@ -176,23 +146,6 @@ function __createEvent() {
         }
     }
     return true;
-}
-
-function processSequence(resolve, param) {
-    var param = param instanceof Array ? param : [param], i, name, count = 0;
-    this.data = this.data || {};
-    for (i = 0; i < param.length; i++) {
-        name = param[i].app;
-        if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
-        delete param[i].app;
-
-        xjs.load(param[i]).then(function (key, result) {
-            this.data[key] = result;
-            count += 1;
-            if (count == param.length)
-                resolve();
-        }.bind(this, name));
-    }
 }
 
 export default widget;
