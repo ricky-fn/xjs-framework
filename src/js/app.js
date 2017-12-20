@@ -2,7 +2,9 @@ import xjs from "./core/engine.js"
 import broadcast from "./core/broadcast.js"
 import router from "./router.js"
 import tool from "./plugin/tool.js"
+import {http, httpConfig} from "./api/http.js"
 import "../sass/app.scss"
+import mock from "./api/mock.js"
 
 /**
  * 路由模块
@@ -26,7 +28,9 @@ xjs.tool = tool;
  * @memberOf xjs
  * @see module:load
  */
-// xjs.load = ajax;
+const ajax = new http();
+
+xjs.$http = ajax.request.bind(ajax);
 
 /**
  * 挂在事件广播模块

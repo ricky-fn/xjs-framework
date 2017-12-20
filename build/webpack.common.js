@@ -28,6 +28,7 @@ const config = {
             }
         ]
     },
+    devtool: 'inline-source-map',
     plugins: [
         // 清除dist文件夹
         new CleanWebpackPlugin(["dist"], {

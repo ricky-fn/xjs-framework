@@ -32,7 +32,6 @@ Router.setup({
  * @memberOf xjs/router
  * @see module:router#define
  */
-
 Router.define({
     path: 'Home',
     page: Home

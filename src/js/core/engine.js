@@ -58,11 +58,9 @@ xjs.createView = function (prop, param, node, defaultNode) {
         }
     }
 
-
     return new Promise((resolve, reject) => {
         try {
-            let instance = mixinProp(prop, param);
-            instance.init(node, function () {
+            let instance = new prop(node, function () {
                 resolve(instance);
             });
         } catch (err) {
