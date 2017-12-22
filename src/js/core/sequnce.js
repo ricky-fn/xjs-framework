@@ -1,12 +1,12 @@
 import axios from "axios";
 
 function dataQueue(queue) {
+    queue = queue instanceof Array ? queue : [queue];
+
     let data = {
         length: queue.length
     };
     let times = 0;
-
-    queue = queue instanceof Array ? queue : [queue];
 
     return new Promise((resolve, reject) => {
         postRequest(queue, data, resolve, reject, times);
@@ -45,7 +45,7 @@ function postRequest(queue, data, resolve, reject, times) {
 }
 
 function insertRes(data, result) {
-    data[result.config.des] = result.data;
+    data[result.config.app] = result.data;
 }
 
 export default dataQueue;

@@ -1,4 +1,6 @@
 import dataQueue from "./sequnce"
+import buildNexus from "./nexus"
+
 /**
  * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义<br>
  * 所有Page类通过[xjs.declare]{@link xjs.declare}申明，并将[widget]{@link widget}作为`parents`参数传入，用以继承默认事件流程。<br>
@@ -17,7 +19,13 @@ class widget {
      * @function init
      * @param dom 根Dom节点，用于插入模板
      */
-    constructor(dom, call) {
+    constructor(dom, call, params, nexus) {
+
+        if (params != undefined) {
+            this.query = {};
+            Object.assign(this.query, params);
+        }
+
         catchNode.call(this, dom, 'domNode');
         /**
          * 定义Page的标题
@@ -30,21 +38,26 @@ class widget {
 
         this.postRequest(() => {
             this.buildRender();
-            /**
-             * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
-             * @memberOf widget
-             * @function startup
-             */
-            this.startup && this.startup();
-            call && call();
+            this.buildNexus(() => {
+                /**
+                 * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
+                 * @memberOf widget
+                 * @function startup
+                 */
+                this.startup && this.startup();
+                call && call(this);
+            }, nexus)
         });
         return this;
     }
     postRequest(call) {
         let request = this.request ? this.request() : false;
+        if (request == false) {
+            return call(this);
+        }
         dataQueue(request).then(data => {
             this.data = data;
-            call();
+            call(this);
         }).catch(error => {
             if (xjs.router.history.length == 1) {
                 throw "Request failed with status code 404 in " + error.config.url;
@@ -83,7 +96,11 @@ class widget {
         if (this.templateString) {
             this.domNode.innerHTML = this.templateString(this.data);
         }
-        __createNode.call(this) && __createEvent.call(this);
+        __createNode.call(this);
+        __createEvent.call(this);
+    }
+    buildNexus(end, nexus) {
+        __createNexus.call(this, end, nexus);
     }
     /**
      * Page的退出事件，在路由切换被触发时调用，如果有添加事件监听需要自行注销，应该写在这个事件里，
@@ -123,7 +140,11 @@ function __createEvent() {
     var doms, dom, parents, n, i;
     doms = this.domNode.querySelectorAll('[data-xjs-event]');
     doms = Array.prototype.slice.call(doms);
-    if (this.$domNode.data('xjs-event')) doms.push(this.domNode);
+
+    if (this.$domNode.data('xjs-event')) {
+        doms.push(this.domNode);
+    }
+
     for (i = 0; i < doms.length; i++) {
         var f, j;
         dom = $(doms[i]);
@@ -146,6 +167,39 @@ function __createEvent() {
         }
     }
     return true;
+}
+
+function __createNexus(end, currentNexus) {
+    let doms, batch;
+    let map = [];
+
+    if (currentNexus == undefined) {
+        window.nexus = currentNexus = {members: [], call: null, ready: false};
+    }
+
+    doms = this.domNode.querySelectorAll('[data-xjs-nexus]');
+    batch = this.defineNexus ? this.defineNexus() : false;
+
+    if (batch == false) {
+        return end();
+    }
+
+    if (!(batch instanceof Array)) {
+        batch = [batch];
+    }
+
+    doms.forEach(dom => {
+        let name = dom.dataset["xjsNexus"];
+
+        batch.forEach(item => {
+            if (item.name == name) {
+                item.dom = dom;
+                map.push(item);
+            }
+        })
+    });
+
+    new buildNexus(map, currentNexus, end);
 }
 
 export default widget;

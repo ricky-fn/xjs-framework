@@ -10,7 +10,6 @@ class Router {
         this.state = {};
         this.componentSequence = {};
         this.map = [];
-        this._currentNexus = false;
         this.history = [];
     }
 
@@ -61,7 +60,6 @@ class Router {
      * @method define
      * @memberOf module:route
      * @param {String} name
-     * @param {Object}[nexus] 此路由所依赖的关系链
      * @param {Boolean}[authorize] 是否需要登录操作
      * @param {Function} callback 回调函数，如果有路由关系链，将会等待关系链的成员准备好后再执行回调
      * @example
@@ -86,28 +84,17 @@ class Router {
     define(config) {
         var authorize = config.authorize || false;
         var path = config.path;
-        var nexus = config.nexus;
         var page = config.page;
 
         if (page == undefined)
-            throw "please aim which one page are used to render for this path";
+            throw "please aim to which one page are used to render for this path";
 
         if (path == undefined)
             throw "path is a necessary argument";
 
-        var self = this;
-        var components = {};
-
-        if (nexus) {
-            nexus.forEach(function (name) {
-                components[name] = self.componentSequence[name];
-            });
-        }
-
         this.map.forEach(function (map) {
             if (map.quote == path) {
                 map.authorize = authorize;
-                map.nexus = components;
                 map.page = page;
                 map.events = {
                     beforeEnter: config.beforeEnter
@@ -184,10 +171,8 @@ class Router {
                 history.pushState(null, null, to.fullPath);
             }
 
-            renderComponents.call(self, route).then(function () {
-                xjs.createView(route.page, {
-                    router: to
-                });
+            xjs.createView(route.page, {
+                router: to
             });
         }
     }
@@ -199,17 +184,11 @@ class Router {
      * @memberOf module:route
      */
     start() {
-        var that = this;
+        let that = this;
 
-        function onHashChange(e) {
-            // var param = [];
+        function onHashChange() {
             var url = tool.url();
             if (url.hash) {
-                // param.push(location.hash);
-                // if (e && e.isTrusted) {
-                //     param.push(null, true);
-                // }
-                // that.navigator.apply(that, param);
                 that.navigator({
                     path: url.hash,
                     query: url.query,
@@ -224,10 +203,6 @@ class Router {
 
         window.onhashchange = onHashChange;
         onHashChange();
-    }
-
-    component(array) {
-        this.componentSequence = array;
     }
 }
 
@@ -282,105 +257,6 @@ function verify(hash, map) {
             return path;
     }
     return false;
-}
-
-/**
- * 对当前路由依赖关系以及下一个路由依赖关系做对比，对不存在于路由关系链里的模块会销毁掉[xjs.destroyView]{@link xjs.destroyView}
- * @method filterComponents
- * @memberOf module:route
- */
-function filterComponents(nexus) {
-    var length = Object.keys(nexus);
-    var currentNexus = this._currentNexus;
-
-    if (length == 0) {
-        xjs.destroyView();
-        this._currentNexus = false;
-        return nexus;
-    } else {
-        if (!currentNexus) {
-            xjs.destroyView();
-            this._currentNexus = nexus;
-            return nexus;
-        } else {
-            findAbandonedItem(nexus, currentNexus).forEach(function (key) {
-                xjs.destroyView(currentNexus[key].id);
-                delete currentNexus[key].id;
-            });
-
-            findAbandonedInstance(currentNexus).forEach(function (id) {
-                xjs.destroyView(id);
-            });
-
-            this._currentNexus = nexus;
-
-            return findAddedItem(nexus, currentNexus);
-        }
-    }
-}
-
-function renderComponents(route) {
-    var renderTeam = filterComponents.call(this, route.nexus);
-    var renderSequence = [];
-    var self = this;
-
-    Object.keys(renderTeam).forEach(function (name) {
-        let def = new Promise((resolve) => {
-            setTimeout(function() {
-                self.componentSequence[name].render(function (instance) {
-                    self.componentSequence[name].id = instance.id;
-                    resolve();
-                });
-            }, 0);
-        });
-        renderSequence.push(def);
-    });
-
-    return Promise.all(renderSequence);
-}
-
-function findAbandonedInstance(oldNexus) {
-    var ids = [];
-    var mark = false;
-    for (var obj in xjs._instances) {
-        mark = false;
-        for (var item in oldNexus) {
-            if (oldNexus[item].id == xjs._instances[obj].id)
-                mark = true;
-        }
-        if (mark == false)
-            ids.push(xjs._instances[obj].id);
-    }
-
-    return ids;
-}
-
-function findAbandonedItem(nexus, oldNexus) {
-    var nexusArray = Object.keys(nexus);
-    var oldNexusArray = Object.keys(oldNexus);
-    var items = [];
-
-    oldNexusArray.forEach(function (key) {
-        if (nexusArray.indexOf(key) < 0) {
-            items.push(key);
-        }
-    });
-
-    return items;
-}
-
-function findAddedItem(nexus, oldNexus) {
-    var nexusArray = Object.keys(nexus);
-    var oldNexusArray = Object.keys(oldNexus);
-    var items = [];
-
-    nexusArray.forEach(function (key) {
-        if (oldNexusArray.indexOf(key) < 0) {
-            items.push(key);
-        }
-    });
-
-    return items;
 }
 
 function getFullPath(param) {
