@@ -58,15 +58,16 @@ xjs.createView = function (prop, param, node, defaultNode) {
         }
     }
 
-    return new Promise((resolve, reject) => {
-        try {
-            new prop(node, function (obj) {
-                resolve(obj);
-            }, param);
-        } catch (err) {
-            reject(err);
-        }
-    });
+    return new prop(node, param);
+    // return new Promise((resolve, reject) => {
+    //     try {
+    //         new prop(node, function (obj) {
+    //             resolve(obj);
+    //         }, param);
+    //     } catch (err) {
+    //         reject(err);
+    //     }
+    // });
 };
 
 /**

@@ -19,7 +19,7 @@ class widget {
      * @function init
      * @param dom 根Dom节点，用于插入模板
      */
-    constructor(dom, call, params, nexus) {
+    constructor(dom, params, nexus) {
 
         if (params != undefined) {
             this.query = {};
@@ -36,26 +36,27 @@ class widget {
          */
         setTitle(this.title || document.title);
 
-        this.postRequest(() => {
-            this.buildRender();
-            this.buildNexus(() => {
-                /**
-                 * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
-                 * @memberOf widget
-                 * @function startup
-                 */
-                this.startup && this.startup();
-                call && call(this);
-            }, nexus)
-        });
-        return this;
+        return new Promise((resolve, reject) => {
+            this.postRequest(() => {
+                this.buildRender();
+                this.buildNexus(() => {
+                    /**
+                     * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
+                     * @memberOf widget
+                     * @function startup
+                     */
+                    this.startup && this.startup();
+                    resolve(this);
+                }, nexus)
+            }, reject);
+        })
     }
-    postRequest(call) {
+    postRequest(call, reject) {
         let request = this.request ? this.request() : false;
         if (request == false) {
             return call(this);
         }
-        dataQueue(request).then(data => {
+        return dataQueue(request).then(data => {
             this.data = data;
             call(this);
         }).catch(error => {
@@ -64,6 +65,7 @@ class widget {
             } else {
 
             }
+            reject(error);
         });
     }
     /**

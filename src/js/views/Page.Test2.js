@@ -9,7 +9,7 @@ class Test extends widget {
         return require("../../pages/Page.Test.html")
     }
     get baseClass() {
-        return "page-home fade in"
+        return "page-test2 fade in"
     }
     startup() {
         console.log("Third Test Page Was Ready");

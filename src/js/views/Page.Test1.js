@@ -1,5 +1,6 @@
 import widget from "../core/widget.js";
 import "../../sass/_Page.Home.scss";
+import TestPage2 from "./Page.Test2"
 
 class Test extends widget {
     get title() {
@@ -9,7 +10,7 @@ class Test extends widget {
         return require("../../pages/Page.Test.html")
     }
     get baseClass() {
-        return "page-home fade in"
+        return "page-test1 fade in"
     }
     request() {
         return {
@@ -18,8 +19,19 @@ class Test extends widget {
             method: "post"
         }
     }
+    defineNexus() {
+        return [
+            {
+                name: "test",
+                prop: TestPage2,
+            },
+            // {
+            //     name: "test2",
+            //     prop: TestPage2,
+            // }
+        ]
+    }
     startup() {
-        console.log(this.data)
         console.log("Second Test Page Was Ready");
     }
 }
