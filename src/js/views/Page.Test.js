@@ -1,7 +1,6 @@
 import widget from "../core/widget"
 import "../../sass/_Page.Home.scss"
 import TestPage from "./Page.Test1"
-import TestPage2 from "./Page.Test2"
 
 class Test extends widget {
     get title() {
@@ -26,14 +25,13 @@ class Test extends widget {
                 name: "test",
                 prop: TestPage,
             },
-            {
-                name: "test2",
-                prop: TestPage2,
-            }
+            // {
+            //     name: "test2",
+            //     prop: TestPage2,
+            // }
         ]
     }
     startup() {
-        console.log(this.data)
         console.log("First Test Page Was Ready");
     }
 }
