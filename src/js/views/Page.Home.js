@@ -1,5 +1,6 @@
-import widget from "../core/widget.js";
-import "../../sass/_Page.Home.scss";
+import widget from "../core/widget"
+import TestPage from "./Page.Test"
+import "../../sass/_Page.Home.scss"
 
 class Home extends widget {
     get title() {
@@ -12,26 +13,21 @@ class Home extends widget {
         return "page-home fade in"
     }
     request() {
-        return [
-            {
-                des: "test1",
-                url: "test.php",
-                method: "get"
-            },
-            {
-                des: "test2",
-                url: "2.php",
-                method: "get"
-            },
-            {
-                des: "test3",
-                url: "3.php",
-                method: "get",
-                data: {
-                    a: 1
-                }
+        return {
+            app: "test",
+            url: "test.php",
+            method: "post"
+        }
+    }
+    defineNexus() {
+        return {
+            name: "test",
+            prop: TestPage,
+            params: {
+                a: 1,
+                b: 2
             }
-        ]
+        }
     }
     startup() {
         console.log(this.data)

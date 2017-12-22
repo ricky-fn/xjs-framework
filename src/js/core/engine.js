@@ -60,9 +60,9 @@ xjs.createView = function (prop, param, node, defaultNode) {
 
     return new Promise((resolve, reject) => {
         try {
-            let instance = new prop(node, function () {
-                resolve(instance);
-            });
+            new prop(node, function (obj) {
+                resolve(obj);
+            }, param);
         } catch (err) {
             reject(err);
         }
@@ -81,33 +81,5 @@ xjs.createView = function (prop, param, node, defaultNode) {
 xjs.declare = function (parents, prop) {
     return mixinProp(parents, prop);
 };
-
-function mixinProp(parentClass, prop) {
-    if (!prop) {
-        prop = parentClass;
-        parentClass = {};
-    }
-    var fnTest = /xyz/.test(function () {
-        xyz;
-    }) ? /\b_super\b/ : /.*/;
-    var _super = parentClass;
-    var prototype = Object.create(parentClass);
-
-    for (var name in prop) {
-        prototype[name] = typeof prop[name] == "function" &&
-        typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-            (function (name, fn) {
-                return function () {
-                    var tmp = this._super;
-                    this._super = _super[name];
-                    var ret = fn.apply(this, arguments);
-                    this._super = tmp;
-                    return ret;
-                };
-            })(name, prop[name]) :
-            prop[name];
-    }
-    return prototype;
-}
 
 export default xjs;
