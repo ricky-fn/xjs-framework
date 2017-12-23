@@ -12,27 +12,20 @@ class Test extends widget {
     get baseClass() {
         return "page-test1 fade in"
     }
-    request() {
-        return {
-            app: "test",
-            url: "test.php",
-            method: "post"
-        }
-    }
     defineNexus() {
         return [
             {
                 name: "test",
                 prop: TestPage2,
-            },
-            // {
-            //     name: "test2",
-            //     prop: TestPage2,
-            // }
+            }
         ]
     }
     startup() {
         console.log("Second Test Page Was Ready");
+    }
+    onExit() {
+        super.onExit();
+        console.log("Second Test Page Has Been Destroyed");
     }
 }
 

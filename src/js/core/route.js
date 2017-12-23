@@ -1,10 +1,13 @@
 import tool from "../plugin/tool.js"
 import $ from "zepto-modules/"
 
+let instance = null;
+
 /**
  * 路由模块
  * @module route
  */
+
 class Router {
     constructor() {
         this.state = {};
@@ -131,7 +134,7 @@ class Router {
     navigator(param) {
         param = param || {};
 
-        var self = this,
+        let self = this,
             to, from, route;
 
         route = matchRoute.call(this, param.path);
@@ -139,7 +142,7 @@ class Router {
         if (route == false)
             throw "this path is not exist";
 
-        var fullPath = getFullPath(param);
+        let fullPath = getFullPath(param);
 
         to = {
             path: param.path,
@@ -173,6 +176,18 @@ class Router {
 
             xjs.createView(route.page, {
                 router: to
+            }).then(obj => {
+                if (instance) {
+                    instance.onExit();
+                    instance = null;
+                }
+                instance = obj;
+            }).catch(error => {
+                if (this.history.length == 1) {
+                    throw error;
+                } else {
+                    this.back();
+                }
             });
         }
     }
@@ -187,12 +202,11 @@ class Router {
         let that = this;
 
         function onHashChange() {
-            var url = tool.url();
+            let url = tool.url();
             if (url.hash) {
                 that.navigator({
                     path: url.hash,
-                    query: url.query,
-                    fullPath: url.toString()
+                    query: url.query
                 })
             } else {
                 that.navigator({
@@ -203,6 +217,17 @@ class Router {
 
         window.onhashchange = onHashChange;
         onHashChange();
+    }
+    go(length) {
+        if (length == undefined) {
+            throw "length has to be a number";
+        }
+        this.history = this.history.slice(0, this.history.length + length);
+        history.go(length);
+    }
+    back(length) {
+        length = length || -1;
+        this.go(length);
     }
 }
 
@@ -260,13 +285,16 @@ function verify(hash, map) {
 }
 
 function getFullPath(param) {
-    if (param.query == undefined)
-        return '';
+    let query = param.query;
+    let queryLength = query ? Object.keys(query).length : 0;
 
-    var fullPath = '#' + param.path + '?';
-    Object.keys(param.query).forEach(function (key, index) {
-        fullPath += key + '=' + param.query[key];
-        if (index != Object.keys(param.query).length - 1)
+    if (query == undefined || queryLength == 0)
+        return '#' + param.path;
+
+    let fullPath = '#' + param.path + '?';
+    Object.keys(query).forEach(function (key, index) {
+        fullPath += key + '=' + query[key];
+        if (index != queryLength - 1)
             fullPath += '&';
     });
     return fullPath;

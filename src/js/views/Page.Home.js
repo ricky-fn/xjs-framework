@@ -12,13 +12,6 @@ class Home extends widget {
     get baseClass() {
         return "page-home fade in"
     }
-    request() {
-        return {
-            app: "test",
-            url: "test.php",
-            method: "post"
-        }
-    }
     defineNexus() {
         return {
             name: "test",
@@ -29,18 +22,9 @@ class Home extends widget {
             }
         }
     }
-    startup() {
-        console.log(this.data)
-        // axios.all([axios.get('test.php'), axios.get('1.php')])
-        //     .then(function() {
-        //         console.log(arguments);
-        //     })
-        // xjs.$http({
-        //     method: "GET",
-        //     url: "test.php"
-        // }).then(result => {
-        //     console.log(result);
-        // })
+    onExit() {
+        super.onExit();
+        console.log("Home Page Has Been Destroyed");
     }
 }
 

@@ -47,7 +47,7 @@ class widget {
                      */
                     this.startup && this.startup();
                     resolve(this);
-                }, nexus)
+                }, nexus, reject)
             }, reject);
         })
     }
@@ -59,14 +59,7 @@ class widget {
         return dataQueue(request).then(data => {
             this.data = data;
             call(this);
-        }).catch(error => {
-            if (xjs.router.history.length == 1) {
-                throw "Request failed with status code 404 in " + error.config.url;
-            } else {
-
-            }
-            reject(error);
-        });
+        }).catch(error => reject(error));
     }
     /**
      * 模板渲染流程，将会把this对象作为数据采集对象传入模板。并扫描模板里的自定义锚点后映射到this对象上<br>
@@ -102,7 +95,8 @@ class widget {
         __createEvent.call(this);
     }
     buildNexus(end, nexus) {
-        __createNexus.call(this, end, nexus);
+        let child = __createNexus.call(this, end, nexus);
+        this.child = child;
     }
     /**
      * Page的退出事件，在路由切换被触发时调用，如果有添加事件监听需要自行注销，应该写在这个事件里，
@@ -111,6 +105,11 @@ class widget {
      * @function onExit
      */
     onExit() {
+        if (this.child) {
+            this.child.forEach(son => {
+                son.instance.onExit();
+            })
+        }
         this.$domNode.remove();
     }
 }
@@ -171,7 +170,7 @@ function __createEvent() {
     return true;
 }
 
-function __createNexus(end, currentNexus) {
+function __createNexus(end, currentNexus, reject) {
     let doms, batch;
     let map = [];
 
@@ -201,7 +200,7 @@ function __createNexus(end, currentNexus) {
         })
     });
 
-    new buildNexus(map, currentNexus, end);
+    return new buildNexus(map, currentNexus, end, reject);
 }
 
 export default widget;

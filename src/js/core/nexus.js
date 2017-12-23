@@ -1,5 +1,5 @@
 class nexus {
-    constructor(map, currentNexus, end) {
+    constructor(map, currentNexus, end, reject) {
         map.forEach(member => {
             let newNexus = {
                 members: [],
@@ -20,12 +20,19 @@ class nexus {
 
             currentNexus.members.push(newNexus);
 
-            let instance = new member.prop(member.dom, member.params, newNexus);
-            instance.then(() => {
+            let def = new member.prop(
+                member.dom,
+                member.params,
+                newNexus
+            );
+
+            def.then(instance => {
+                member.instance = instance;
                 newNexus.ready = true;
                 newNexus.call();
-            });
-        })
+            }).catch(error => reject);
+        });
+        return map;
     }
 }
 
