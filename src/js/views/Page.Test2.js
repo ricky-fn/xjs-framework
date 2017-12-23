@@ -14,6 +14,10 @@ class Test extends widget {
     startup() {
         console.log("Third Test Page Was Ready");
     }
+    onExit() {
+        super.onExit();
+        console.log("Third Test Page Has Been Destroyed");
+    }
 }
 
 export default Test;

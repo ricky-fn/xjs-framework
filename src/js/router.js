@@ -25,4 +25,9 @@ Router.define({
     page: Home
 });
 
+Router.define({
+    path: 'Test',
+    page: Test
+});
+
 export default Router;

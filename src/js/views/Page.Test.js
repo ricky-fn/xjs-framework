@@ -34,6 +34,10 @@ class Test extends widget {
     startup() {
         console.log("First Test Page Was Ready");
     }
+    onExit() {
+        super.onExit();
+        console.log("First Test Page Has Been Destroyed");
+    }
 }
 
 export default Test;
