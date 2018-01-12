@@ -1,5 +1,7 @@
 import dataQueue from "./sequnce"
 import buildNexus from "./nexus"
+import proxy from "./virtual/proxy"
+import watch from "./watch"
 
 /**
  * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义<br>
@@ -22,8 +24,7 @@ class widget {
     constructor(dom, params, nexus) {
 
         if (params != undefined) {
-            this.query = {};
-            Object.assign(this.query, params);
+            Object.assign(this, params);
         }
 
         catchNode.call(this, dom, 'domNode');
@@ -88,11 +89,43 @@ class widget {
          * @memberOf widget
          * @name templateString
          */
-        if (this.templateString) {
-            this.domNode.innerHTML = this.templateString(this.data);
-        }
-        __createNode.call(this);
-        __createEvent.call(this);
+
+        let _proxy = new proxy(this.domNode, this.data, this.templateString);
+
+        this.$set = (obj, prop, value) => {
+            let val = value;
+            let type = Object.prototype.toString.call(val);
+
+            Object.defineProperty(obj, prop, {
+                enumerable: true,
+                configurable: true,
+                get: () => {
+                    return val;
+                },
+                set: (newVal) => {
+                    val = newVal;
+                    _proxy.updateView();
+                }
+            });
+            _proxy.updateView();
+
+            if (type == '[object Object]' || type == '[object Array]') {
+                new watch(val, () => {
+                    _proxy.updateView.call(_proxy);
+                });
+            }
+        };
+
+        this.$delete = (obj, prop) => {
+            let type = Object.prototype.toString.call(obj);
+
+            if (type == '[object Object]') {
+                delete obj[prop];
+                _proxy.updateView();
+            } else if (type == '[object Array]') {
+                obj.splice(obj.indexOf(prop), 1);
+            }
+        };
     }
     buildNexus(end, nexus) {
         let child = __createNexus.call(this, end, nexus);

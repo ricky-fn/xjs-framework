@@ -1,31 +1,27 @@
 import widget from "../core/widget"
-import TestPage from "./Page.Test"
 import "../../sass/_Page.Home.scss"
+import templateString from "../../pages/Page.Home.html"
 
-class Home extends widget {
-    get title() {
-        return "首页";
+export default xjs.extendView(widget, {
+    title: "首页",
+    templateString,
+    baseClass: "page-home fade in",
+    data: {
+        items: {
+            item1: "123",
+            item2: "456",
+            item3: 789
+        },
+        test: "sss",
+        // test() {
+        //     console.log(arguments);
+        //     console.log("congratulations!!!!");
+        // }
+    },
+    startup() {
+        setTimeout(() => {
+            // this.$set(this.data, "items", {});
+            this.data.test = true;
+        }, 2000);
     }
-    get templateString() {
-        return require("../../pages/Page.Home.html")
-    }
-    get baseClass() {
-        return "page-home fade in"
-    }
-    defineNexus() {
-        return {
-            name: "test",
-            prop: TestPage,
-            params: {
-                a: 1,
-                b: 2
-            }
-        }
-    }
-    onExit() {
-        super.onExit();
-        console.log("Home Page Has Been Destroyed");
-    }
-}
-
-export default Home;
+});
