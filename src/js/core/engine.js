@@ -61,6 +61,17 @@ xjs.createView = function (prop, param, node, defaultNode) {
     return new prop(node, param);
 };
 
+xjs.extendView = function (prop, extend) {
+    return function () {
+        let params = {};
+        let args = [params, extend];
+        args = args.concat([].slice.call(arguments));
+        Object.assign.apply(null, args);
+
+        return xjs.createView(prop, params);
+    }
+};
+
 /**
  * 申明一个Page类，所有Page类都需要先申明后才可以作为参数被被creatView使用
  * @method declare

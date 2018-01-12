@@ -174,7 +174,7 @@ class Router {
                 history.pushState(null, null, to.fullPath);
             }
 
-            xjs.createView(route.page, {
+            route.page({
                 router: to
             }).then(obj => {
                 if (instance) {

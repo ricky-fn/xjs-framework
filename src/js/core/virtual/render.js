@@ -1,0 +1,60 @@
+function render(domTree) {
+    let fragment = document.createDocumentFragment();
+
+    if (!isArray(domTree)) {
+        domTree = [domTree];
+    }
+
+    combine(domTree, fragment);
+
+    return fragment;
+}
+
+function combine(domTree, fragment) {
+    domTree.forEach(element => {
+        if (element.type == "tag") {
+            let dom = creatByTag(fragment, element);
+            combine(element.children, dom);
+        } else if (element.type == "text") {
+            creatByText(fragment, element);
+        } else if (element.type == "comment") {
+            creatByCommon(fragment, element);
+        }
+    });
+}
+
+function creatByCommon(fragment, element) {
+    let common = document.createComment(element.data);
+    fragment.appendChild(common);
+}
+
+function creatByText(fragment, element) {
+    let text = document.createTextNode(element.data);
+    fragment.appendChild(text);
+}
+
+function creatByTag(fragment, element) {
+    let dom = document.createElement(element.name);
+
+    fragment.appendChild(setAttribs(dom, element.attribs));
+
+    if (element.event) {
+        element.event.addEventListener(dom);
+    }
+
+    return dom;
+}
+
+function setAttribs(dom, attribs) {
+    Object.keys(attribs).forEach(attr => {
+        dom.setAttribute(attr, attribs[attr]);
+    });
+
+    return dom;
+}
+
+function isArray(o){
+    return Object.prototype.toString.call(o)=='[object Array]';
+}
+
+export default render;

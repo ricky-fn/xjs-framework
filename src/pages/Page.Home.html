@@ -1,5 +1,6 @@
-<% for (var i = 0; i < 5; i++) { %>
-aaaa
-<% } %>
-<img src="../images/1.png" alt="">
-<div data-xjs-nexus="test"></div>
+<div v-if="typeof test == 'string'">
+    string
+</div>
+<div v-else>
+    boolean
+</div>
