@@ -37,8 +37,6 @@ class parseTemplate {
                         value : element.attribs[member]
                     };
 
-                    removeHook(element.attribs, attr.name);
-
                     queue.push(match, {
                         element,
                         domTree,
@@ -57,14 +55,20 @@ class parseTemplate {
 function makeSequence(recall) {
     let queue = [];
     let flag = true;
+    let redirect = [null];
 
     this.push = (member, args) => {
-        let use = member.use.bind(null, args);
         let level = member.level;
         if (queue[level] == undefined) {
-            queue[level] = [use];
+            queue[level] = [{
+                handler: member.use,
+                args
+            }];
         } else {
-            queue[level].push(use);
+            queue[level].push({
+                handler: member.use,
+                args
+            });
         }
     };
 
@@ -75,19 +79,28 @@ function makeSequence(recall) {
                     return;
                 }
 
-                group.forEach((use, rinx) => {
+                group.forEach((target, rinx) => {
                     if (flag == true) {
-                        use((tree, prop) => {
-                            if (
-                                flag == true &&
-                                cinx == queue.length - 1 &&
-                                rinx == group.length - 1
-                            ) {
-                                recall(tree, prop);
-                            }
-                        }, () => {
-                            flag = false;
+                        redirect.forEach(args => {
+                            let params = Object.assign(target.args, args);
+                            target.handler(params, (element, domTree, properties) => {
+                                redirect.push({
+                                    element,
+                                    properties,
+                                    domTree
+                                });
+                                if (
+                                    flag == true &&
+                                    cinx == queue.length - 1 &&
+                                    rinx == group.length - 1
+                                ) {
+                                    recall(element.children, properties);
+                                }
+                            }, () => {
+                                flag = false;
+                            });
                         });
+                        redirect.splice(0, 1);
                     }
                 });
             })
@@ -95,10 +108,6 @@ function makeSequence(recall) {
             recall();
         }
     };
-}
-
-function removeHook(group, name) {
-    delete group[name];
 }
 
 export default parseTemplate

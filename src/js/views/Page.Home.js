@@ -12,16 +12,21 @@ export default xjs.extendView(widget, {
             item2: "456",
             item3: 789
         },
-        test: "sss",
+        array: [1,2,3,4,5,6],
+        test: true,
         // test() {
         //     console.log(arguments);
         //     console.log("congratulations!!!!");
         // }
     },
     startup() {
+        console.log(this.data);
         setTimeout(() => {
-            // this.$set(this.data, "items", {});
-            this.data.test = true;
+            console.log(this.data);
+            this.data.array = [1];
         }, 2000);
+        setTimeout(() => {
+            this.data.array.push(2);
+        }, 3000);
     }
 });

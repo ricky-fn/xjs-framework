@@ -27,7 +27,7 @@ class widget {
             Object.assign(this, params);
         }
 
-        catchNode.call(this, dom, 'domNode');
+        this.El = dom;
         /**
          * 定义Page的标题
          *
@@ -40,7 +40,7 @@ class widget {
         return new Promise((resolve, reject) => {
             this.postRequest(() => {
                 this.buildRender();
-                this.buildNexus(() => {
+                // this.buildNexus(() => {
                     /**
                      * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
                      * @memberOf widget
@@ -48,7 +48,7 @@ class widget {
                      */
                     this.startup && this.startup();
                     resolve(this);
-                }, nexus, reject)
+                // }, nexus, reject)
             }, reject);
         })
     }
@@ -81,7 +81,7 @@ class widget {
          * @memberOf widget
          * @name baseClass
          */
-        this.$domNode.addClass(this.baseClass);
+        this.El.className += this.baseClass;
         /**
          * 传入模板字符串，基于`underscore`的模板引擎渲染HTML
          *
@@ -90,7 +90,7 @@ class widget {
          * @name templateString
          */
 
-        let _proxy = new proxy(this.domNode, this.data, this.templateString);
+        let _proxy = new proxy(this.El, this.data, this.templateString);
 
         this.$set = (obj, prop, value) => {
             let val = value;
@@ -127,10 +127,10 @@ class widget {
             }
         };
     }
-    buildNexus(end, nexus) {
-        let child = __createNexus.call(this, end, nexus);
-        this.child = child;
-    }
+    // buildNexus(end, nexus) {
+    //     let child = __createNexus.call(this, end, nexus);
+    //     this.child = child;
+    // }
     /**
      * Page的退出事件，在路由切换被触发时调用，如果有添加事件监听需要自行注销，应该写在这个事件里，
      * 如果你复写了这个函数，别忘了在function末尾调用this._super()
@@ -147,93 +147,41 @@ class widget {
     }
 }
 
-function catchNode(dom, name) {
-    this['$' + name] = $(dom);
-    this[name] = dom;
-}
-
 function setTitle(title) {
     document.title = title;
 }
 
-function __createNode() {
-    var doms, dom, parents, n, i;
-    doms = this.domNode.querySelectorAll('[data-xjs-element]');
-    doms = Array.prototype.slice.call(doms);
-    for (i = 0; i < doms.length; i++) {
-        dom = $(doms[i]);
-        parents = dom.parents('[data-xjs-mixin]');
-        if (parents.length && parents[0] != this.domNode) break;
-        n = dom.data('xjs-element');
-        this[n] = ( this['$' + n] = dom ).get(0);
-    }
-    return true;
-}
-
-function __createEvent() {
-    var doms, dom, parents, n, i;
-    doms = this.domNode.querySelectorAll('[data-xjs-event]');
-    doms = Array.prototype.slice.call(doms);
-
-    if (this.$domNode.data('xjs-event')) {
-        doms.push(this.domNode);
-    }
-
-    for (i = 0; i < doms.length; i++) {
-        var f, j;
-        dom = $(doms[i]);
-        parents = dom.parents('[data-xjs-mixin]');
-
-        if (parents.length && parents[0] != this.domNode)
-            break;
-
-        n = dom.data('xjs-event');
-        f = n.replace(/\s/g, "").split(';').slice(0, -1);
-        for (j = 0; j < f.length; j++) {
-            var event = f[j].split(':');
-            var ename = event[0];
-            var efn = this[event[1]];
-            if (efn == undefined) {
-                console.warn(event[1] + ' event is not exist on this page');
-            } else {
-                dom.on(ename, efn.bind(this));
-            }
-        }
-    }
-    return true;
-}
-
-function __createNexus(end, currentNexus, reject) {
-    let doms, batch;
-    let map = [];
-
-    if (currentNexus == undefined) {
-        window.nexus = currentNexus = {members: [], call: null, ready: false};
-    }
-
-    doms = this.domNode.querySelectorAll('[data-xjs-nexus]');
-    batch = this.defineNexus ? this.defineNexus() : false;
-
-    if (batch == false) {
-        return end();
-    }
-
-    if (!(batch instanceof Array)) {
-        batch = [batch];
-    }
-
-    doms.forEach(dom => {
-        let name = dom.dataset["xjsNexus"];
-
-        batch.forEach(item => {
-            if (item.name == name) {
-                item.dom = dom;
-                map.push(item);
-            }
-        })
-    });
-
-    return new buildNexus(map, currentNexus, end, reject);
-}
+// function __createNexus(end, currentNexus, reject) {
+//     let doms, batch;
+//     let map = [];
+//
+//     if (currentNexus == undefined) {
+//         window.nexus = currentNexus = {members: [], call: null, ready: false};
+//     }
+//
+//     doms = this.domNode.querySelectorAll('[data-xjs-nexus]');
+//     batch = this.defineNexus ? this.defineNexus() : false;
+//
+//     if (batch == false) {
+//         return end();
+//     }
+//
+//     if (!(batch instanceof Array)) {
+//         batch = [batch];
+//     }
+//
+//     doms.forEach(dom => {
+//         let name = dom.dataset["xjsNexus"];
+//
+//         batch.forEach(item => {
+//             if (item.name == name) {
+//                 item.dom = dom;
+//                 map.push(item);
+//             }
+//         })
+//     });
+//
+//     return new buildNexus(map, currentNexus, end, reject);
+// }
 
 export default widget;
