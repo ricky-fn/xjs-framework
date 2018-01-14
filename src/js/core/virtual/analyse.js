@@ -2,22 +2,22 @@ import deepClone from "./clone"
 
 const hooks = [
     {
-        test: /^v\-if/,
+        test: /^v\-if$/,
         use: ifOrder,
         level: 0
     },
     {
-        test: /^v\-else/,
+        test: /^v\-else$/,
         use: elseOrder,
         level: 0
     },
     {
-        test: /^v\-else\-if/,
+        test: /^v\-else\-if$/,
         use: elseIfOrder,
         level: 0
     },
     {
-        test: /^v\-show/,
+        test: /^v\-show$/,
         use: showOrder,
         level: 1
     },
@@ -32,24 +32,52 @@ const hooks = [
         level: 1
     },
     {
-        test: /^v\-for/,
+        test: /^v\-for$/,
         use: forOrder,
         level: 2
+    },
+    {
+        test: /^ref$/,
+        use: refOrder,
+        level: 3
     }
 ];
+
+function refOrder(params, go) {
+    let {element, domTree, attr, properties} = params;
+    let refs = properties._refs[attr.value];
+    let key = element.attribs["data-key"];
+    if (refs == undefined) {
+        properties._refs[attr.value] = [key];
+    } else {
+        if (refs.indexOf(key) < 0) {
+            refs.push(key);
+        }
+    }
+    go(element, domTree, properties);
+}
 
 function elseIfOrder(params, go, stop) {
     let {element, domTree, index, properties, attr} = params;
     let content = attr.value;
-    let val = evalWithContext(content, properties);
+    let result = evalWithContext(content, properties);
+
+    removeHook(element.attribs, attr.name);
 
     if (element.hasOwnProperty("_if")) {
-        if (!element._if && val) {
-            go();
-        } else {
+        if (element._if) {
             domTree.splice(index(), 1);
             index(index() - 1);
             stop();
+            result = true;
+        } else {
+            if (result) {
+                go(element, domTree, properties);
+            } else {
+                domTree.splice(index(), 1);
+                index(index() - 1);
+                stop();
+            }
         }
     } else {
         throw "cannot find a flag 'v-if' or 'v-else-if' in previous element";
@@ -63,23 +91,26 @@ function elseIfOrder(params, go, stop) {
         nextSibling = domTree[index() + _index];
 
         if (
+            nextSibling != undefined &&
             nextSibling.type == "tag" &&
             (
                 nextSibling.attribs.hasOwnProperty("v-else") ||
                 nextSibling.attribs.hasOwnProperty("v-else-if")
             )
         ) {
-            nextSibling._if = val;
+            nextSibling._if = result;
         }
     } while (nextSibling != undefined && nextSibling.type != "tag");
 }
 
 function elseOrder(params, go, stop) {
-    let {element, domTree, index} = params;
+    let {element, domTree, index, properties} = params;
+
+    removeHook(element.attribs, attr.name);
 
     if (element.hasOwnProperty("_if")) {
         if (!element._if) {
-            go();
+            go(element, domTree, properties);
         } else {
             domTree.splice(index(), 1);
             stop();
@@ -94,8 +125,10 @@ function ifOrder(params, go, stop) {
     let content = attr.value;
     let val = evalWithContext(content, properties);
 
+    removeHook(element.attribs, attr.name);
+
     if (val) {
-        go();
+        go(element, domTree, properties);
     } else {
         domTree.splice(index(), 1);
         index(index() - 1);
@@ -110,6 +143,7 @@ function ifOrder(params, go, stop) {
         nextSibling = domTree[index() + _index];
 
         if (
+            nextSibling != undefined &&
             nextSibling.type == "tag" &&
             (
                 nextSibling.attribs.hasOwnProperty("v-else") ||
@@ -122,13 +156,15 @@ function ifOrder(params, go, stop) {
 }
 
 function bindOrder(params, go, stop) {
-    let {attr, element, properties} = params;
+    let {attr, element, properties, domTree} = params;
     let attrName = attr.name;
     let attrPlus = attrName.match(/[^v\-bind:]/g).join('');
     let tVal = element.attribs[attrPlus];
     let tVals = tVal ? [tVal] : [];
 
     let evalue = evalWithContext(attr.value, properties);
+
+    removeHook(element.attribs, attr.name);
 
     if (typeof evalue == 'object' && evalue.toString() == '[object Object]') {
         Object.keys(evalue).forEach(val => {
@@ -145,13 +181,16 @@ function bindOrder(params, go, stop) {
     }
     element.attribs[attrPlus] = tVals.join(' ');
 
-    go();
+    go(element, domTree, properties);
 }
 
 function eventOrder(params, go, stop) {
-    let {attr, element, properties} = params;
+    let {attr, element, properties, domTree} = params;
     let eventName = attr.name;
     let eventCallName = attr.value;
+
+    removeHook(element.attribs, attr.name);
+
     eventName = eventName.match(/([^v\-on:].*)/)[0];
 
     element.event = {
@@ -183,13 +222,15 @@ function eventOrder(params, go, stop) {
         }
     }
 
-    go();
+    go(element, domTree, properties);
 }
 
 function showOrder(params, go, stop) {
-    let {element, properties, attr} = params;
+    let {element, properties, domTree, attr} = params;
     let content = attr.value;
     let val;
+
+    removeHook(element.attribs, attr.name);
     try {
         val = evalWithContext(content, properties);
     } catch(err) {
@@ -203,7 +244,7 @@ function showOrder(params, go, stop) {
         element.attribs.style += "display: none;";
     }
 
-    go();
+    go(element, domTree, properties);
 }
 
 function forOrder(params, go, stop) {
@@ -215,6 +256,7 @@ function forOrder(params, go, stop) {
     let source = sentence.match(/\w+$/g);
     source = properties[source[0]];
 
+    removeHook(element.attribs, attr.name);
     if (mulArg != null && mulArg.length == 1) {
         let args = mulArg[0].match(/[^(\(\)\,\s)][\w+]*/g);
         inner = args[0];
@@ -242,7 +284,7 @@ function forOrder(params, go, stop) {
         index(index() + 1); // set a new index of "for" statement, because domTree had been insert clone
         _index += 1;
 
-        go(d.children, context);
+        go(d, domTree, context);
     }
 
     if (_index == 0) {
@@ -296,6 +338,10 @@ function keyPlus(val, add) {
     val = val.toString(16);
 
     return val;
+}
+
+function removeHook(group, name) {
+    delete group[name];
 }
 
 

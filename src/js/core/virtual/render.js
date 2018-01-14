@@ -1,20 +1,22 @@
-function render(domTree) {
+import refs from "./refs"
+
+function render(domTree, data) {
     let fragment = document.createDocumentFragment();
 
     if (!isArray(domTree)) {
         domTree = [domTree];
     }
 
-    combine(domTree, fragment);
+    combine(domTree, fragment, data);
 
     return fragment;
 }
 
-function combine(domTree, fragment) {
+function combine(domTree, fragment, data) {
     domTree.forEach(element => {
         if (element.type == "tag") {
-            let dom = creatByTag(fragment, element);
-            combine(element.children, dom);
+            let dom = creatByTag(fragment, element, data);
+            combine(element.children, dom, data);
         } else if (element.type == "text") {
             creatByText(fragment, element);
         } else if (element.type == "comment") {
@@ -33,13 +35,17 @@ function creatByText(fragment, element) {
     fragment.appendChild(text);
 }
 
-function creatByTag(fragment, element) {
+function creatByTag(fragment, element, data) {
     let dom = document.createElement(element.name);
 
     fragment.appendChild(setAttribs(dom, element.attribs));
 
     if (element.event) {
         element.event.addEventListener(dom);
+    }
+
+    if (element.attribs.hasOwnProperty("ref")) {
+        refs.insertRefs(data, element, dom);
     }
 
     return dom;

@@ -1,36 +1,42 @@
 import diff from "./diff"
 
 function patch(oldGroup, newGroup) {
-    let oldKeys = {};
-    let newKeys = {};
+    // let oldKeys = {};
+    // let newKeys = {};
+    let oldKeys = [];
+    let newKeys = [];
+    let okeyMap = {};
+    let nkeyMap = {};
 
     oldGroup.forEach(el => {
         let key = el.attribs ? el.attribs["data-key"] : undefined;
         if (key !== undefined) {
-            oldKeys[key] = el;
+            okeyMap[key] = el;
+            oldKeys.push(key);
         }
     });
     newGroup.forEach(el => {
         let key = el.attribs ? el.attribs["data-key"] : undefined;
         if (key !== undefined) {
-            newKeys[key] = el;
+            nkeyMap[key] = el;
+            newKeys.push(key);
         }
     });
 
-    let patches = diff(Object.keys(oldKeys), Object.keys(newKeys)); //两个object的顺序不一定是按照真实的顺序排列
+    let patches = diff(oldKeys, newKeys); //两个object的顺序不一定是按照真实的顺序排列
 
-    let restKeys = Object.keys(oldKeys);
+    let restKeys = oldKeys.concat();
 
     if (patches.length > 0) {
         patches.forEach(cp => {
             restKeys.splice(restKeys.indexOf(cp.target), 1);
-            cp.target = oldKeys[cp.target] || newKeys[cp.target];
+            cp.target = okeyMap[cp.target] || nkeyMap[cp.target];
         });
     }
 
     restKeys.forEach(key => {
-        let oldEl = oldKeys[key];
-        let newEl = newKeys[key];
+        let oldEl = okeyMap[key];
+        let newEl = nkeyMap[key];
 
         if (oldEl == undefined || newEl == undefined) {
             return;
@@ -68,7 +74,7 @@ function patch(oldGroup, newGroup) {
         getRestEl: () => {
             let array = [];
             restKeys.forEach(key => {
-                array.push([oldKeys[key], newKeys[key]]);
+                array.push([okeyMap[key], nkeyMap[key]]);
             });
             return array;
         }

@@ -8,10 +8,23 @@ const htmlparser = require("htmlparser2");
 
 class proxy {
     constructor(dom, data, template) {
+        Object.defineProperty(data, "$refs", {
+            configurable: true,
+            writable: true,
+            value: {}
+        });
+        Object.defineProperty(data, "_refs", {
+            configurable: true,
+            writable: true,
+            value: {}
+        });
+
+        let domTree = getTree(template);
+        let renderTree = new parse(domTree, data);
         this.parentDom = dom;
-        this.domTree = getTree(template);
-        this.updateTree(new parse(this.domTree, data));
-        this.domFragment = render(this.getTree());
+        this.domTree = domTree;
+        this.updateTree(renderTree);
+        this.domFragment = render(this.getTree(), data);
         this.data = data;
 
         this.insertRealDom();
@@ -30,10 +43,11 @@ class proxy {
         return this.renderTree;
     }
     updateView() {
+        this.data._refs = {};
         let newTree = new parse(this.domTree, this.data);
         let oldTree = this.renderTree;
         this.updateTree(newTree);
-        compare(oldTree, newTree, this.parentDom);
+        compare(oldTree, newTree, this.parentDom, this.data);
     }
 }
 

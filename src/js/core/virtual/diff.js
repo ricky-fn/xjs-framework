@@ -112,28 +112,29 @@ let findMoves = function (cols, rows, moves, matrix, length) {
         preVal = matrix[coordinate.row][coordinate.col - 1];
         upVal = matrix[coordinate.row - 1][coordinate.col - 1];
         topVal = matrix[coordinate.row - 1][coordinate.col];
-        rowVal = rows[coordinate.row - 2];
-        colVal = cols[coordinate.col - 2];
+        rowVal = rows[coordinate.row - 1];
+        colVal = cols[coordinate.col - 1];
 
         if (rowVal == colVal) {
             coordinate.row -= 1;
             coordinate.col -= 1;
         } else {
             minVal = Math.min(preVal, upVal, topVal);
-            if (minVal == upVal) {
-                moves.push({
-                    method: "replace",
-                    index: cols.indexOf(colVal),
-                    target: rowVal
-                });
-                coordinate.col -= 1;
-            } else if (minVal == topVal) {
+            if (minVal == topVal) {
                 moves.push({
                     method: "add",
                     index: cols.indexOf(colVal),
                     target: rowVal
                 });
                 coordinate.row -= 1;
+            } else if (minVal == upVal) {
+                moves.push({
+                    method: "replace",
+                    index: cols.indexOf(colVal),
+                    target: rowVal
+                });
+                coordinate.row -= 1;
+                coordinate.col -= 1;
             } else if (minVal == preVal) {
                 moves.push({
                     method: "delete",

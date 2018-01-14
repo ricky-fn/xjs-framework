@@ -18,7 +18,7 @@ class watch {
     }
     observeObj(obj, path) {
         let self = this;
-        Object.keys(obj).forEach(function (prop) {
+        Object.keys(obj).forEach((prop) => {
             let val = obj[prop];
             let _path = path.slice(0);
             _path.push(prop);
@@ -29,6 +29,8 @@ class watch {
                 set: (newVal) => {
                     val = newVal;
                     self.recall(_path, newVal);
+
+                    this.observe(val, _path);
                 }
             });
             self.observe(val, _path);

@@ -1,10 +1,11 @@
 import patch from "./patch"
 import render from "./render"
+import refs from "./refs"
 
-function compare(oldTree, newTree, parent) {
+function compare(oldTree, newTree, parent, data) {
     let patches = patch(oldTree, newTree);
     patches.getPatches().forEach(patch => {
-        applyPatch(patch, parent);
+        applyPatch(patch, parent, data);
     });
     patches.getRestEl().forEach(team => {
         let nextOT = team[0].children;
@@ -17,11 +18,10 @@ function compare(oldTree, newTree, parent) {
     });
 }
 
-function applyPatch(patch, parent) {
+function applyPatch(patch, parent, data) {
     switch (patch.method) {
         case "add":
-            debugger;
-            let child = render(patch.target);
+            let child = render(patch.target, data);
             parent.insertBefore(child, parent.childNodes[patch.index + 1]);
             break;
         case "attr":
@@ -48,6 +48,13 @@ function applyPatch(patch, parent) {
             break;
         case "delete":
             let target = parent.childNodes[patch.index];
+            let gather = target.querySelectorAll("[ref]");
+
+            refs.removeRefs(data, target);
+            gather.forEach(target => {
+                refs.removeRefs(data, target);
+            });
+
             target.remove();
     }
 }
