@@ -75,14 +75,6 @@ class widget {
      */
     buildRender() {
         /**
-         * Page类的CSS Class Name
-         *
-         * @type {string}
-         * @memberOf widget
-         * @name baseClass
-         */
-        this.El.className += this.baseClass;
-        /**
          * 传入模板字符串，基于`underscore`的模板引擎渲染HTML
          *
          * @type {string}
@@ -90,7 +82,7 @@ class widget {
          * @name templateString
          */
 
-        let _proxy = new proxy(this.El, this.data, this.templateString);
+        let _proxy = new proxy(this.El, this.data, this.template);
 
         this.$set = (obj, prop, value) => {
             let val = value;
@@ -107,13 +99,14 @@ class widget {
                     _proxy.updateView();
                 }
             });
-            _proxy.updateView();
 
             if (type == '[object Object]' || type == '[object Array]') {
                 new watch(val, () => {
                     _proxy.updateView.call(_proxy);
                 });
             }
+
+            _proxy.updateView();
         };
 
         this.$delete = (obj, prop) => {
@@ -126,6 +119,16 @@ class widget {
                 obj.splice(obj.indexOf(prop), 1);
             }
         };
+
+        this.reRender = () => {
+            this.startup && this.startup();
+            _proxy.render(this.data);
+        };
+
+        this.hangUp = () => {
+            this.El.innerHTML = "";
+            _proxy.stopRender();
+        }
     }
     // buildNexus(end, nexus) {
     //     let child = __createNexus.call(this, end, nexus);
@@ -138,12 +141,12 @@ class widget {
      * @function onExit
      */
     onExit() {
-        if (this.child) {
-            this.child.forEach(son => {
-                son.instance.onExit();
-            })
-        }
-        this.$domNode.remove();
+        // if (this.child) {
+        //     this.child.forEach(son => {
+        //         son.instance.onExit();
+        //     })
+        // }
+        // this.$domNode.remove();
     }
 }
 

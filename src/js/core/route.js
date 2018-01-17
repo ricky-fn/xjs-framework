@@ -1,12 +1,13 @@
 import tool from "../plugin/tool.js"
 import $ from "zepto-modules/"
-
-let instance = null;
+import widget from "./widget";
 
 /**
  * 路由模块
  * @module route
  */
+
+let presentPage;
 
 class Router {
     constructor() {
@@ -156,32 +157,37 @@ class Router {
         if (route.events.beforeEnter) {
             route.events.beforeEnter(to, from, function (next) {
                 if (next == to) {
-                    end.call(this);
+                    this.switch(param, route, to);
                 } else {
                     self.navigator(next);
                 }
             });
         } else {
-            end.call(this);
+            this.switch(param, route, to);
+        }
+    }
+
+    switch(param, route, to) {
+        if (param.replaceHash) {
+            this.history.pop().push(to);
+            history.replaceState(null, null, to.fullPath);
+        } else {
+            this.history.push(to);
+            history.pushState(null, null, to.fullPath);
         }
 
-        function end() {
-            if (param.replaceHash) {
-                this.history.pop().push(to);
-                history.replaceState(null, null, to.fullPath);
-            } else {
-                this.history.push(to);
-                history.pushState(null, null, to.fullPath);
-            }
+        if (presentPage) {
+            presentPage.hangUp();
+        }
 
+        if (route.page instanceof widget) {
+            presentPage = route.page;
+            route.page.reRender();
+        } else {
             route.page({
                 router: to
             }).then(obj => {
-                if (instance) {
-                    instance.onExit();
-                    instance = null;
-                }
-                instance = obj;
+                route.page = presentPage = obj;
             }).catch(error => {
                 if (this.history.length == 1) {
                     throw error;
@@ -239,30 +245,14 @@ class Router {
  * @param {Object} router.map
  */
 function matchRoute(hash) {
-    var map = this.map;
-    var path = verify(hash, map);
-    var self = this;
+    let path = verify(hash, this.map);
 
     if (!path)
         return false;
 
-    if (path.authorize && !xjs.getUserInfo()) {
-        getAuthorization.call(self, hash);
-    } else {
-        return $.extend({}, path, {
-            param: hash.match(path.rule).slice(1)
-        })
-    }
-}
-
-/**
- * 跳转到登陆模块，完成用户身份验证后再进入hash所匹配的路由
- * @method getAuthorization
- * @memberOf module:route
- * @param hash
- */
-function getAuthorization(hash) {
-    this.navigator('#login/', {backHash: hash}, true);
+    return Object.assign(path, {
+        param: hash.match(path.rule).slice(1)
+    });
 }
 
 /**
