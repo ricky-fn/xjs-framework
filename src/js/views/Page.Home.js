@@ -1,11 +1,10 @@
 import widget from "../core/widget"
 import "../../sass/_Page.Home.scss"
-import templateString from "../../pages/Page.Home.html"
+import template from "../../pages/Page.Home.html"
 
 export default xjs.extendView(widget, {
     title: "首页",
-    templateString,
-    baseClass: "page-home fade in",
+    template,
     data: {
         items: {
             item1: "123",

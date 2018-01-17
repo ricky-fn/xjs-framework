@@ -19,25 +19,31 @@ class proxy {
             value: {}
         });
 
-        let domTree = getTree(template);
-        let renderTree = new parse(domTree, data);
-        this.parentDom = dom;
-        this.domTree = domTree;
-        this.updateTree(renderTree);
-        this.domFragment = render(this.getTree(), data);
         this.data = data;
+        this._accpet = true;
 
-        this.insertRealDom();
+        this.updateTree(dom, data, template);
+        this.render(data);
         this.startObserve(data);
     }
-    insertRealDom() {
-        this.parentDom.appendChild(this.domFragment);
+    render(data) {
+        this._accpet = true;
+        this.data = data;
+        let domFragment = render(this.getTree(), data);
+        this.parentDom.appendChild(domFragment);
+    }
+    stopRender() {
+        this._accpet = false;
     }
     startObserve(data) {
         new watch(data, this.updateView.bind(this));
     }
-    updateTree(tree) {
-        this.renderTree = tree;
+    updateTree(dom, data, template) {
+        let domTree = getTree(template);
+        let renderTree = new parse(domTree, data);
+        this.parentDom = dom;
+        this.domTree = domTree;
+        this.renderTree = renderTree;
     }
     getTree() {
         return this.renderTree;
@@ -46,8 +52,10 @@ class proxy {
         this.data._refs = {};
         let newTree = new parse(this.domTree, this.data);
         let oldTree = this.renderTree;
-        this.updateTree(newTree);
-        compare(oldTree, newTree, this.parentDom, this.data);
+        this.renderTree = newTree;
+        if (this._accpet) {
+            compare(oldTree, newTree, this.parentDom, this.data);
+        }
     }
 }
 
