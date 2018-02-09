@@ -1,3 +1,5 @@
+import component from "./component/common"
+
 /**
  * 框架的方法集合，是全局公用对象
  * @namespace xjs
@@ -72,17 +74,6 @@ xjs.extendView = function (prop, extend) {
     }
 };
 
-/**
- * 申明一个Page类，所有Page类都需要先申明后才可以作为参数被被creatView使用
- * @method declare
- * @memberOf xjs
- * @param {String} classname Page类的名字
- * @param {Object} parents 此Page类的父类继承对象，通常使用[widget]{@link widget}作为父类
- * @param {Object} prop Page类的方法
- * @see widget
- */
-xjs.declare = function (parents, prop) {
-    return mixinProp(parents, prop);
-};
+xjs.component = component().register;
 
 export default xjs;

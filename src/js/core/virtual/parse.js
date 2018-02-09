@@ -1,30 +1,42 @@
 import {hooks, symbol} from "./analyse"
-import deepClone from "./clone"
+import deepClone from "../util/clone"
+import comCnt from "../component/common"
 
 class parseTemplate {
-    constructor(domTree, context) {
-        let clone = this.parse(deepClone(domTree), context);
+    constructor(domTree, context, component) {
+        let clone = this.parse(deepClone(domTree), context, component);
 
         return clone;
     }
-    parse(domTree, context) {
+    parse(domTree, context, component) {
         for (let index = 0; index < domTree.length; index++) {
             let element = domTree[index];
             if (element.type == "text") {
                 symbol(element, domTree, index, context);
             } else if (element.type == "tag") {
-                this.analyseHook(element, domTree, (add) => {
-                    index = add || index;
-                    return index;
-                }, context);
+                this.analyseHook(
+                    (add) => {
+                        index = add || index;
+                        return index;
+                    },
+                    element,
+                    domTree,
+                    context,
+                    component
+                );
             }
         }
 
         return domTree;
     }
-    analyseHook(element, domTree, index, properties) {
+    analyseHook(index, element, domTree, properties, priCnt) {
+        let {cntControl, component} = getComponent(element, priCnt, comCnt());
         let recall = (domTree, prop) => {
-            this.parse(domTree || element.children, prop || properties);
+            if (component == undefined) {
+                this.parse(domTree || element.children, prop || properties);
+            } else {
+                cntControl.init(component, prop, element);
+            }
         };
 
         let queue = new makeSequence(recall);
@@ -42,6 +54,7 @@ class parseTemplate {
                         domTree,
                         index,
                         properties,
+                        cntControl,
                         attr
                     });
                 }
@@ -50,6 +63,19 @@ class parseTemplate {
 
         queue.process();
     }
+}
+
+function getComponent(element, priCnt, comCnt) {
+    let cntControl, component;
+    if (priCnt.match(element.name)) {
+        component = priCnt.match(element.name);
+        cntControl = priCnt;
+    } else if (comCnt.match(element.name)) {
+        component = comCnt.match(element.name);
+        cntControl = comCnt;
+    }
+
+    return {cntControl, component};
 }
 
 function makeSequence(recall) {

@@ -1,6 +1,7 @@
 import widget from "../core/widget"
 import "../../sass/_Page.Home.scss"
 import template from "../../pages/Page.Home.html"
+import testPage from "../../pages/Page.Test.html"
 
 export default xjs.extendView(widget, {
     title: "首页",
@@ -17,6 +18,11 @@ export default xjs.extendView(widget, {
         //     console.log(arguments);
         //     console.log("congratulations!!!!");
         // }
+    },
+    component: {
+        myComponent: {
+            template: testPage
+        }
     },
     startup() {
         console.log(this.data);

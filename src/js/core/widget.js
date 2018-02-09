@@ -1,7 +1,6 @@
-import dataQueue from "./sequnce"
-import buildNexus from "./nexus"
 import proxy from "./virtual/proxy"
 import watch from "./watch"
+import component from "./component/main"
 
 /**
  * @fileOverview 这是Page的基类，所有Page的默认事件和流程都是在这里被定义<br>
@@ -21,52 +20,31 @@ class widget {
      * @function init
      * @param dom 根Dom节点，用于插入模板
      */
-    constructor(dom, params, nexus) {
+    constructor(dom, params) {
 
         if (params != undefined) {
             Object.assign(this, params);
         }
 
         this.El = dom;
-        /**
-         * 定义Page的标题
-         *
-         * @type {string}
-         * @memberOf widget
-         * @name title
-         */
-        setTitle(this.title || document.title);
 
         return new Promise((resolve, reject) => {
-            this.postRequest(() => {
+            try {
                 this.buildRender();
-                // this.buildNexus(() => {
-                    /**
-                     * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
-                     * @memberOf widget
-                     * @function startup
-                     */
-                    this.startup && this.startup();
-                    resolve(this);
-                // }, nexus, reject)
-            }, reject);
+            } catch (err) {
+                reject(err);
+            }
+            /**
+             * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
+             * @memberOf widget
+             * @function startup
+             */
+            this.startup && this.startup();
+            resolve(this);
         })
     }
-    postRequest(call, reject) {
-        let request = this.request ? this.request() : false;
-        if (request == false) {
-            return call(this);
-        }
-        return dataQueue(request).then(data => {
-            this.data = data;
-            call(this);
-        }).catch(error => reject(error));
-    }
     /**
-     * 模板渲染流程，将会把this对象作为数据采集对象传入模板。并扫描模板里的自定义锚点后映射到this对象上<br>
-     * [data-xjs-element] 将挂载到this对象上，并通过$ + name 用以区分普通dom对象和jquery对象
      * @example
-     * <div data-xjs-element="divNode"></div>
      * //this.divNode 获取原始dom对象
      * //this.$divNode 获取jquery对象
      * @memberOf widget
@@ -82,7 +60,15 @@ class widget {
          * @name templateString
          */
 
-        let _proxy = new proxy(this.El, this.data, this.template);
+        let _component = new component();
+
+        if (this.component !== undefined) {
+            Object.keys(this.component).forEach(el => {
+                _component.register(el, this.component[el]);
+            });
+        }
+
+        let _proxy = new proxy(this.El, this.data, this.template, _component);
 
         this.$set = (obj, prop, value) => {
             let val = value;
@@ -128,30 +114,8 @@ class widget {
         this.hangUp = () => {
             this.El.innerHTML = "";
             _proxy.stopRender();
-        }
+        };
     }
-    // buildNexus(end, nexus) {
-    //     let child = __createNexus.call(this, end, nexus);
-    //     this.child = child;
-    // }
-    /**
-     * Page的退出事件，在路由切换被触发时调用，如果有添加事件监听需要自行注销，应该写在这个事件里，
-     * 如果你复写了这个函数，别忘了在function末尾调用this._super()
-     * @memberOf widget
-     * @function onExit
-     */
-    onExit() {
-        // if (this.child) {
-        //     this.child.forEach(son => {
-        //         son.instance.onExit();
-        //     })
-        // }
-        // this.$domNode.remove();
-    }
-}
-
-function setTitle(title) {
-    document.title = title;
 }
 
 // function __createNexus(end, currentNexus, reject) {

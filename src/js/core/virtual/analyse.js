@@ -1,4 +1,4 @@
-import deepClone from "./clone"
+import deepClone from "../util/clone"
 
 const hooks = [
     {
@@ -156,30 +156,33 @@ function ifOrder(params, go, stop) {
 }
 
 function bindOrder(params, go, stop) {
-    let {attr, element, properties, domTree} = params;
-    let attrName = attr.name;
-    let attrPlus = attrName.match(/[^v\-bind:]/g).join('');
-    let tVal = element.attribs[attrPlus];
-    let tVals = tVal ? [tVal] : [];
-
+    let {attr, element, properties, domTree, cntControl} = params;
+    debugger;
+    let tVal = element.attribs[attr.name];
     let evalue = evalWithContext(attr.value, properties);
 
-    removeHook(element.attribs, attr.name);
-
-    if (typeof evalue == 'object' && evalue.toString() == '[object Object]') {
-        Object.keys(evalue).forEach(val => {
-            let flag = evalue[val];
-
-            if (flag == true) {
-                tVals.push(val);
-            }
-        });
-    } else if (evalue instanceof Array) {
-        tVals = tVals.concat(evalue);
+    if (cntControl != undefined) {
+        cntControl.cache[tVal] = evalue;
     } else {
-        tVals.push(evalue);
+        let tVals = tVal ? [tVal] : [];
+
+        removeHook(element.attribs, attr.name);
+
+        if (typeof evalue == 'object' && evalue.toString() == '[object Object]') {
+            Object.keys(evalue).forEach(val => {
+                let flag = evalue[val];
+
+                if (flag == true) {
+                    tVals.push(val);
+                }
+            });
+        } else if (evalue instanceof Array) {
+            tVals = tVals.concat(evalue);
+        } else {
+            tVals.push(evalue);
+        }
+        element.attribs[attrPlus] = tVals.join(' ');
     }
-    element.attribs[attrPlus] = tVals.join(' ');
 
     go(element, domTree, properties);
 }
