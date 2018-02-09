@@ -1,45 +1,34 @@
-### 版本号：1.0.0
+### version：beta 2.0.1
 
-### 简介：
-个人使用前端开发集成框架，集成了单页应用框架以及前端项目自动构建工具，适用于中小型项目的快速开发。
+This is a personal Javascript framework which is similar to Vue framework. I'm doing this for improving my kills on coding and to understanding how to realize the newest techniques.
 
-### API文档：
-文档根据jsdoc的规则编写，请执行[docs/index.html](https://github.com/a2604882741z/xjs-framework/tree/master/docs)获取api信息。
-当更新了js备注后，在命令行里执行下面的命令更新文档。
+### devDependencies:
+1. webpack 3.10.0
+2. Node.js 9.2.0
+
+After you installed everything, there is two orders can let you start to working on it.
 ```javascript
-gulp editAPI
+npm start //this order will lunch a synchronous web server
+```
+```javascript
+npm build //this order will generate a released version
 ```
 
-### 目录分类：
-	dev/ 前端自动构建工具生成文件夹，存储编译过后的文件
-	src/ 前端资源文件夹
-		icons/ 图标
-		images/ 公用图片
-		pages/ html模板
-		sass/ CSS
-		js/ 脚本
-			lib/ 底层依赖插件
-			plugin/ 业务插件
-			core/ 核心模块
-				engine.js 底层框架核心
-				route.js 路由模块
-				watch.js 数据监听模块
-				widget.js Model基类
-			app.js 项目入口文件
-			router.js 路由定义模块
+### contact:
+email: mr.jiangxue@hotmail.com
 
-### 前端开发环境配置：
-1. 安装Nodejs
-2. 在当前路径下，在命令行里执行`npm install`载入依赖包再执行`npm install -g gulp`
-3. 在命令行里执行：
-```javascript
-gulp //开始工作
-```
-4. 开发结束后执行一下命令，并从dev目录里获取发布版本
-```javascript
-gulp release //发布线上版本
-```
-
-### 任何疑问:
-QQ: 3427495853<br>
-mail: mr.jiangxue@hotmail.com
+### version history:
+v2.0.1
+update "component module" to make a flexible project.
+v2.0.0
+update ES6 version. it now offers an ability of building interactive web applications. I referenced many conceptions from Vue.
+v1.0.4
+optimize route's definition and page's nexus
+v1.0.3:
+cache all basic classes of pages for improving speed of render.
+v1.0.2:
+add a web introduction of present version.
+v1.0.1:
+optimize sass module for removing a dependence of .net framework
+v1.0.0:
+update initial version
