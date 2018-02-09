@@ -1,17 +1,22 @@
-define('route', ['engine', 'tool'], function (xjs, tool) {
-    /**
-     * 路由模块
-     * @module route
-     */
-    function Router() {
+import tool from "../plugin/tool.js"
+import $ from "zepto-modules/"
+import widget from "./widget";
+
+/**
+ * 路由模块
+ * @module route
+ */
+
+let presentPage;
+
+class Router {
+    constructor() {
         this.state = {};
         this.componentSequence = {};
         this.map = [];
-        this._currentNexus = false;
         this.history = [];
     }
 
-    // Router.prototype.definemap = {};
 
     /**
      * 定义路由映射表以及路由的回调函数，支持利用正则表达式
@@ -42,7 +47,7 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
      *   console.log(nid); //bbc
      * });
      */
-    Router.prototype.setup = function (routemap, cb) {
+    setup(routemap, cb) {
         var rule;
         this.callback = cb;
         for (rule in routemap) {
@@ -52,14 +57,13 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
                 quote: routemap[rule]
             });
         }
-    };
+    }
 
     /**
      * 定义路由回调
      * @method define
      * @memberOf module:route
      * @param {String} name
-     * @param {Object}[nexus] 此路由所依赖的关系链
      * @param {Boolean}[authorize] 是否需要登录操作
      * @param {Function} callback 回调函数，如果有路由关系链，将会等待关系链的成员准备好后再执行回调
      * @example
@@ -81,32 +85,20 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
      * //todo something
      * })；
      */
-    // Router.prototype.define = function (name, nexus, authorize, cb) {
-    Router.prototype.define = function (config) {
+    define(config) {
         var authorize = config.authorize || false;
         var path = config.path;
-        var nexus = config.nexus;
         var page = config.page;
 
         if (page == undefined)
-            throw "please aim which one page are used to render for this path";
+            throw "please aim to which one page are used to render for this path";
 
         if (path == undefined)
             throw "path is a necessary argument";
 
-        var self = this;
-        var components = {};
-
-        if (nexus) {
-            nexus.forEach(function (name) {
-                components[name] = self.componentSequence[name];
-            });
-        }
-
         this.map.forEach(function (map) {
             if (map.quote == path) {
                 map.authorize = authorize;
-                map.nexus = components;
                 map.page = page;
                 map.events = {
                     beforeEnter: config.beforeEnter
@@ -114,7 +106,7 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
                 return true;
             }
         });
-    };
+    }
 
     /**
      * 路由导航
@@ -140,11 +132,10 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
      * //提换当前路由历史记录
      * router.navigator('#home', {}, true);
      */
-    // Router.prototype.navigator = function (hash, state, replaceHash) {
-    Router.prototype.navigator = function (param) {
+    navigator(param) {
         param = param || {};
 
-        var self = this,
+        let self = this,
             to, from, route;
 
         route = matchRoute.call(this, param.path);
@@ -152,7 +143,7 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
         if (route == false)
             throw "this path is not exist";
 
-        var fullPath = getFullPath(param);
+        let fullPath = getFullPath(param);
 
         to = {
             path: param.path,
@@ -166,31 +157,46 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
         if (route.events.beforeEnter) {
             route.events.beforeEnter(to, from, function (next) {
                 if (next == to) {
-                    end.call(this);
+                    this.switch(param, route, to);
                 } else {
                     self.navigator(next);
                 }
             });
         } else {
-            end.call(this);
+            this.switch(param, route, to);
+        }
+    }
+
+    switch(param, route, to) {
+        if (param.replaceHash) {
+            this.history.pop().push(to);
+            history.replaceState(null, null, to.fullPath);
+        } else {
+            this.history.push(to);
+            history.pushState(null, null, to.fullPath);
         }
 
-        function end() {
-            if (param.replaceHash) {
-                this.history.pop().push(to);
-                history.replaceState(null, null, to.fullPath);
-            } else {
-                this.history.push(to);
-                history.pushState(null, null, to.fullPath);
-            }
+        if (presentPage) {
+            presentPage.hangUp();
+        }
 
-            renderComponents.call(self, route).then(function () {
-                xjs.createView(route.page, {
-                    router: to
-                });
+        if (route.page instanceof widget) {
+            presentPage = route.page;
+            route.page.reRender();
+        } else {
+            route.page({
+                router: to
+            }).then(obj => {
+                route.page = presentPage = obj;
+            }).catch(error => {
+                if (this.history.length == 1) {
+                    throw error;
+                } else {
+                    this.back();
+                }
             });
-        };
-    };
+        }
+    }
 
     /**
      * 启动路由监听事件，必须在定义路由引射表以及路由回调后再启动。<br>
@@ -198,22 +204,15 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
      * @method start
      * @memberOf module:route
      */
-    Router.prototype.start = function () {
-        var that = this;
+    start() {
+        let that = this;
 
-        function onHashChange(e) {
-            // var param = [];
-            var url = tool.url();
+        function onHashChange() {
+            let url = tool.url();
             if (url.hash) {
-                // param.push(location.hash);
-                // if (e && e.isTrusted) {
-                //     param.push(null, true);
-                // }
-                // that.navigator.apply(that, param);
                 that.navigator({
                     path: url.hash,
-                    query: url.query,
-                    fullPath: url.toString()
+                    query: url.query
                 })
             } else {
                 that.navigator({
@@ -224,175 +223,71 @@ define('route', ['engine', 'tool'], function (xjs, tool) {
 
         window.onhashchange = onHashChange;
         onHashChange();
-    };
-
-    Router.prototype.component = function (array) {
-        this.componentSequence = array;
-    };
-
-    /**
-     * 检查当前路由是否能在路由映射表里找到，如果找不到匹配值就会触发传递给setup里的fail函数
-     * @method checkMatchResult
-     * @memberOf module:route
-     * @param {String} hash
-     * @param {Object} router.map
-     */
-    function matchRoute(hash) {
-        var map = this.map;
-        var path = verify(hash, map);
-        var self = this;
-
-        if (!path)
-            return false;
-
-        if (path.authorize && !xjs.getUserInfo()) {
-            getAuthorization.call(self, hash);
-        } else {
-            return $.extend({}, path, {
-                param: hash.match(path.rule).slice(1)
-            })
-        }
     }
-
-    /**
-     * 跳转到登陆模块，完成用户身份验证后再进入hash所匹配的路由
-     * @method getAuthorization
-     * @memberOf module:route
-     * @param hash
-     */
-    function getAuthorization(hash) {
-        this.navigator('#login/', {backHash: hash}, true);
-    }
-
-    /**
-     * 检测hash是否在路由路由映射表内
-     * @method verify
-     * @memberOf module:route
-     * @param hash
-     * @return {Boolean} 是否匹配到
-     */
-    function verify(hash, map) {
-        var path;
-        var hash = hash.indexOf('?') > 0 ? hash.slice(0, hash.indexOf('?')) : hash;
-        for (var obj in map) {
-            path = map[obj];
-
-            if (hash.match(path.rule))
-                return path;
+    go(length) {
+        if (length == undefined) {
+            throw "length has to be a number";
         }
+        this.history = this.history.slice(0, this.history.length + length);
+        history.go(length);
+    }
+    back(length) {
+        length = length || -1;
+        this.go(length);
+    }
+}
+
+/**
+ * 检查当前路由是否能在路由映射表里找到，如果找不到匹配值就会触发传递给setup里的fail函数
+ * @method checkMatchResult
+ * @memberOf module:route
+ * @param {String} hash
+ * @param {Object} router.map
+ */
+function matchRoute(hash) {
+    let path = verify(hash, this.map);
+
+    if (!path)
         return false;
+
+    return Object.assign(path, {
+        param: hash.match(path.rule).slice(1)
+    });
+}
+
+/**
+ * 检测hash是否在路由路由映射表内
+ * @method verify
+ * @memberOf module:route
+ * @param hash
+ * @return {Boolean} 是否匹配到
+ */
+function verify(hash, map) {
+    var path;
+    var hash = hash.indexOf('?') > 0 ? hash.slice(0, hash.indexOf('?')) : hash;
+    for (var obj in map) {
+        path = map[obj];
+
+        if (hash.match(path.rule))
+            return path;
     }
+    return false;
+}
 
-    /**
-     * 对当前路由依赖关系以及下一个路由依赖关系做对比，对不存在于路由关系链里的模块会销毁掉[xjs.destroyView]{@link xjs.destroyView}
-     * @method filterComponents
-     * @memberOf module:route
-     */
-    function filterComponents(nexus) {
-        var length = Object.keys(nexus);
-        var currentNexus = this._currentNexus;
+function getFullPath(param) {
+    let query = param.query;
+    let queryLength = query ? Object.keys(query).length : 0;
 
-        if (length == 0) {
-            xjs.destroyView();
-            this._currentNexus = false;
-            return nexus;
-        } else {
-            if (!currentNexus) {
-                xjs.destroyView();
-                this._currentNexus = nexus;
-                return nexus;
-            } else {
-                findAbandonedItem(nexus, currentNexus).forEach(function (key) {
-                    xjs.destroyView(currentNexus[key].id);
-                    delete currentNexus[key].id;
-                });
+    if (query == undefined || queryLength == 0)
+        return '#' + param.path;
 
-                findAbandonedInstance(currentNexus).forEach(function (id) {
-                    xjs.destroyView(id);
-                });
+    let fullPath = '#' + param.path + '?';
+    Object.keys(query).forEach(function (key, index) {
+        fullPath += key + '=' + query[key];
+        if (index != queryLength - 1)
+            fullPath += '&';
+    });
+    return fullPath;
+}
 
-                this._currentNexus = nexus;
-
-                return findAddedItem(nexus, currentNexus);
-            }
-        }
-    }
-
-    function renderComponents(route) {
-        var renderTeam = filterComponents.call(this, route.nexus);
-        var renderSequence = [];
-        var self = this;
-
-        Object.keys(renderTeam).forEach(function (name) {
-            var def = $.Deferred();
-            renderSequence.push(def);
-            setTimeout(function() {
-                self.componentSequence[name].render(function (instance) {
-                    self.componentSequence[name].id = instance.id;
-                    def.resolve();
-                });
-            }, 0)
-        });
-
-        return $.when.apply(null, renderSequence);
-    }
-
-    function findAbandonedInstance(oldNexus) {
-        var ids = [];
-        var mark = false;
-        for (var obj in xjs._instances) {
-            mark = false;
-            for (var item in oldNexus) {
-                if (oldNexus[item].id == xjs._instances[obj].id)
-                    mark = true;
-            }
-            if (mark == false)
-                ids.push(xjs._instances[obj].id);
-        }
-
-        return ids;
-    }
-
-    function findAbandonedItem(nexus, oldNexus) {
-        var nexusArray = Object.keys(nexus);
-        var oldNexusArray = Object.keys(oldNexus);
-        var items = [];
-
-        oldNexusArray.forEach(function (key) {
-            if (nexusArray.indexOf(key) < 0) {
-                items.push(key);
-            }
-        });
-
-        return items;
-    }
-
-    function findAddedItem(nexus, oldNexus) {
-        var nexusArray = Object.keys(nexus);
-        var oldNexusArray = Object.keys(oldNexus);
-        var items = [];
-
-        nexusArray.forEach(function (key) {
-            if (oldNexusArray.indexOf(key) < 0) {
-                items.push(key);
-            }
-        });
-
-        return items;
-    }
-
-    function getFullPath(param) {
-        if (param.query == undefined)
-            return '';
-
-        var fullPath = '#' + param.path + '?';
-        Object.keys(param.query).forEach(function (key, index) {
-            fullPath += key + '=' + param.query[key];
-            if (index != Object.keys(param.query).length - 1)
-                fullPath += '&';
-        });
-        return fullPath;
-    }
-
-    return Router;
-});
+export default Router;
