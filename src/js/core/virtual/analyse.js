@@ -157,7 +157,6 @@ function ifOrder(params, go, stop) {
 
 function bindOrder(params, go, stop) {
     let {attr, element, properties, domTree, cntControl} = params;
-    debugger;
     let tVal = element.attribs[attr.name];
     let evalue = evalWithContext(attr.value, properties);
 
