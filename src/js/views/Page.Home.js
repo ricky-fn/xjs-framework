@@ -19,11 +19,11 @@ export default xjs.extendView(widget, {
         //     console.log("congratulations!!!!");
         // }
     },
-    component: {
-        myComponent: {
-            template: testPage
-        }
-    },
+    // component: {
+    //     myComponent: {
+    //         template: testPage
+    //     }
+    // },
     startup() {
         console.log(this.data);
         setTimeout(() => {
