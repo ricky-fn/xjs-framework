@@ -104,7 +104,7 @@ function elseIfOrder(params, go, stop) {
 }
 
 function elseOrder(params, go, stop) {
-    let {element, domTree, index, properties} = params;
+    let {element, domTree, index, properties, attr} = params;
 
     removeHook(element.attribs, attr.name);
 
@@ -164,23 +164,28 @@ function bindOrder(params, go, stop) {
         cntControl.cache[tVal] = evalue;
     } else {
         let tVals = tVal ? [tVal] : [];
+        let name = attr.value;
 
         removeHook(element.attribs, attr.name);
 
         if (typeof evalue == 'object' && evalue.toString() == '[object Object]') {
             Object.keys(evalue).forEach(val => {
                 let flag = evalue[val];
-
-                if (flag == true) {
-                    tVals.push(val);
+                name = val;
+                if (element.attribs[val] != undefined) {
+                    tVals = [element.attribs[val]];
+                    tVals.push(flag);
+                } else {
+                    tVals = [flag];
                 }
+
             });
         } else if (evalue instanceof Array) {
             tVals = tVals.concat(evalue);
         } else {
             tVals.push(evalue);
         }
-        element.attribs[attrPlus] = tVals.join(' ');
+        element.attribs[name] = tVals.join(' ');
     }
 
     go(element, domTree, properties);
@@ -207,7 +212,7 @@ function eventOrder(params, go, stop) {
 
     function eventCall(e) {
         let event, cname;
-
+        // if it called with arguments
         if (/\((.*?)\)/.test(eventCallName)) {
             properties['$event'] = e;
             return evalWithContext(eventCallName, properties);
@@ -220,7 +225,7 @@ function eventOrder(params, go, stop) {
         if (event == undefined || typeof event !== "function") {
             throw eventCallName + " event has not defined yet!";
         } else {
-            event();
+            event.call(properties);
         }
     }
 

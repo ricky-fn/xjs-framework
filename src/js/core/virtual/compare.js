@@ -19,10 +19,29 @@ function compare(oldTree, newTree, parent, data) {
 }
 
 function applyPatch(patch, parent, data) {
+    let target, child;
     switch (patch.method) {
         case "add":
-            let child = render(patch.target, data);
+            child = render(patch.target, data);
             parent.insertBefore(child, parent.childNodes[patch.index + 1]);
+            break;
+        case "delete":
+            target = parent.childNodes[patch.index];
+            let gather = target.querySelectorAll("[ref]");
+
+            refs.removeRefs(data, target);
+            gather.forEach(target => {
+                refs.removeRefs(data, target);
+            });
+
+            target.remove();
+            break;
+        case "replace":
+            target = parent.childNodes[patch.index];
+            child = render(patch.target, data);
+            target.remove();
+
+            parent.insertBefore(child, parent.childNodes[patch.index]);
             break;
         case "attr":
             let obj = parent.childNodes[patch.index];
@@ -40,22 +59,12 @@ function applyPatch(patch, parent, data) {
             let text = parent.childNodes[patch.index];
             text.nodeValue = patch.target.data;
             break;
-        case "event":
-            let {oldEl, newEl} = patch.target;
-            let dom = parent.childNodes[patch.index];
-            oldEl.event.removeEventListener(dom);
-            newEl.event.addEventListener(dom);
-            break;
-        case "delete":
-            let target = parent.childNodes[patch.index];
-            let gather = target.querySelectorAll("[ref]");
-
-            refs.removeRefs(data, target);
-            gather.forEach(target => {
-                refs.removeRefs(data, target);
-            });
-
-            target.remove();
+        // case "event":
+        //     let {oldEl, newEl} = patch.target;
+        //     let dom = parent.childNodes[patch.index];
+        //     oldEl.event.removeEventListener(dom);
+        //     newEl.event.addEventListener(dom);
+        //     break;
     }
 }
 
