@@ -23,14 +23,13 @@ class proxy {
         this.data = data;
         this.component = component;
 
-        this.updateTree(dom, data, template);
-        this.render(data);
+        this.updateTree(dom, template);
+        this.render();
         this.startObserve(data);
     }
-    render(data) {
+    render() {
         this._accpet = true;
-        this.data = data;
-        let domFragment = render(this.getTree(), data);
+        let domFragment = render(this.getTree(), this.data);
         this.parentDom.appendChild(domFragment);
     }
     stopRender() {
@@ -39,9 +38,9 @@ class proxy {
     startObserve(data) {
         new watch(data, this.updateView.bind(this));
     }
-    updateTree(dom, data, template) {
+    updateTree(dom, template) {
         let domTree = getTree(template);
-        let renderTree = new parse(domTree, data, this.component);
+        let renderTree = new parse(domTree, this.data, this.component);
         this.parentDom = dom;
         this.domTree = domTree;
         this.renderTree = renderTree;

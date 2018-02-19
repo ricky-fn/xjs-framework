@@ -33,7 +33,7 @@ class parseTemplate {
         let {cntControl, component} = getComponent(element, priCnt, comCnt());
         let recall = (domTree, prop) => {
             if (component == undefined) {
-                this.parse(domTree || element.children, prop || properties);
+                this.parse(domTree || element.children, prop || properties, priCnt);
             } else {
                 cntControl.init(component, prop, element);
             }

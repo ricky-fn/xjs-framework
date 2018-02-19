@@ -34,12 +34,28 @@ class widget {
             } catch (err) {
                 reject(err);
             }
+
+            this.reRender = () => {
+                if (this.methods) {
+                    this.methods.startup && this.methods.call(this.data);
+                }
+                this._proxy.render(this.data);
+            };
+
+            this.hangUp = () => {
+                this.El.innerHTML = "";
+                this._proxy.stopRender();
+            };
+
             /**
              * 当模板和数据都被渲染后就会调用startup事件，Page里的Dom节点操作以及业务逻辑都应该在这里实现。
              * @memberOf widget
              * @function startup
              */
-            this.startup && this.startup();
+            if (this.methods) {
+                this.methods.startup && this.methods.startup.call(this._proxy.data);
+            }
+
             resolve(this);
         })
     }
@@ -68,53 +84,44 @@ class widget {
             });
         }
 
-        let _proxy = new proxy(this.El, this.data, this.template, _component);
+        let data = Object.assign({
+            $set: (obj, prop, value) => {
+                let val = value;
+                let type = Object.prototype.toString.call(val);
 
-        this.$set = (obj, prop, value) => {
-            let val = value;
-            let type = Object.prototype.toString.call(val);
-
-            Object.defineProperty(obj, prop, {
-                enumerable: true,
-                configurable: true,
-                get: () => {
-                    return val;
-                },
-                set: (newVal) => {
-                    val = newVal;
-                    _proxy.updateView();
-                }
-            });
-
-            if (type == '[object Object]' || type == '[object Array]') {
-                new watch(val, () => {
-                    _proxy.updateView.call(_proxy);
+                Object.defineProperty(obj, prop, {
+                    enumerable: true,
+                    configurable: true,
+                    get: () => {
+                        return val;
+                    },
+                    set: (newVal) => {
+                        val = newVal;
+                        this._proxy.updateView();
+                    }
                 });
+
+                if (type == '[object Object]' || type == '[object Array]') {
+                    new watch(val, () => {
+                        this._proxy.updateView.call(this._proxy);
+                    });
+                }
+
+                this._proxy.updateView();
+            },
+            $delete: (obj, prop) => {
+                let type = Object.prototype.toString.call(obj);
+
+                if (type == '[object Object]') {
+                    delete obj[prop];
+                    this._proxy.updateView();
+                } else if (type == '[object Array]') {
+                    obj.splice(obj.indexOf(prop), 1);
+                }
             }
+        }, this.data, this.methods);
 
-            _proxy.updateView();
-        };
-
-        this.$delete = (obj, prop) => {
-            let type = Object.prototype.toString.call(obj);
-
-            if (type == '[object Object]') {
-                delete obj[prop];
-                _proxy.updateView();
-            } else if (type == '[object Array]') {
-                obj.splice(obj.indexOf(prop), 1);
-            }
-        };
-
-        this.reRender = () => {
-            this.startup && this.startup();
-            _proxy.render(this.data);
-        };
-
-        this.hangUp = () => {
-            this.El.innerHTML = "";
-            _proxy.stopRender();
-        };
+        this._proxy = new proxy(this.El, data, this.template, _component);
     }
 }
 

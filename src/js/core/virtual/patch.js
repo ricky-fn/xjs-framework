@@ -25,7 +25,7 @@ function patch(oldGroup, newGroup) {
 
     let patches = diff(oldKeys, newKeys); //两个object的顺序不一定是按照真实的顺序排列
 
-    let restKeys = oldKeys.concat();
+    let restKeys = newKeys.concat();
 
     if (patches.length > 0) {
         patches.forEach(cp => {
@@ -44,22 +44,22 @@ function patch(oldGroup, newGroup) {
 
         let oldArStr = JSON.stringify(oldEl.attribs);
         let newArStr = JSON.stringify(newEl.attribs);
-        if (oldEl.event) {
-            patches.push({
-                method: "event",
-                target: {oldEl, newEl},
-                index: oldGroup.indexOf(oldEl)
-            });
-        }
+        // if (oldEl.event) {
+        //     patches.splice(0, 0, {
+        //         method: "event",
+        //         target: {oldEl, newEl},
+        //         index: oldGroup.indexOf(oldEl)
+        //     });
+        // }
 
         if (oldArStr != newArStr) {
-            patches.push({
+            patches.splice(0, 0, {
                 method: "attr",
                 target: newEl,
                 index: oldGroup.indexOf(oldEl)
             });
         } else if (oldEl.type == "text" && (oldEl.data != newEl.data)) {
-            patches.push({
+            patches.splice(0, 0, {
                 method: "text",
                 target: newEl,
                 index: oldGroup.indexOf(oldEl)
