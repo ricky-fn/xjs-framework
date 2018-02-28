@@ -78,20 +78,22 @@ function modelOrder(params, go) {
         });
 
         dom.addEventListener('input', (e) => {
-            if (properties[content] != e.target.value) {
-                properties[content] = e.target.value;
+            let data = evalWithContext(content, properties);
+            if (data != e.target.value) {
+                evalWithContext(content + '=' + e.target.value, properties);
             }
         });
         dom.addEventListener('change', (e) => {
-            if (inputType == "checkbox" && properties[content] instanceof Array) {
+            let data = evalWithContext(content, properties);
+            if (inputType == "checkbox" && data instanceof Array) {
                 if (dom.checked == true) {
-                    properties[content].push(dom.value);
+                    data.push(dom.value);
                 } else {
-                    let index = properties[content].indexOf(dom.value);
-                    properties[content].splice(index, 1);
+                    let index = data.indexOf(dom.value);
+                    data.splice(index, 1);
                 }
-            } else if (properties[content] != e.target.value) {
-                properties[content] = e.target.value;
+            } else if (data != e.target.value) {
+                data = e.target.value;
             }
         });
     };

@@ -43,10 +43,11 @@ class http {
                     return data;
                 }]
             }, param)).then(res => {
+                let data = JSON.parse(res.data);
                 if (subConf.skipError) {
-                    resolve(res.data);
+                    resolve(data);
                 } else {
-                    resolve(res.data.data);
+                    resolve(data.data);
                 }
             }).catch(err => reject);
         });
