@@ -50,6 +50,9 @@ const config = {
         new HtmlWebpackPlugin({
             title: "xjs-framework",
             template: filePaths.dev + "index.html"
+        }),
+        new webpack.ProvidePlugin({
+            Mock: 'mockjs'
         })
     ]
 };

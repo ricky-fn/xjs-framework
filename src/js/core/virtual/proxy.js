@@ -23,9 +23,9 @@ class proxy {
         this.data = data;
         this.component = component;
 
-        this.updateTree(dom, template);
-        this.render();
         this.startObserve(data);
+        this.updateVM(dom, template);
+        this.render();
     }
     render() {
         this._accpet = true;
@@ -38,28 +38,28 @@ class proxy {
     startObserve(data) {
         new watch(data, this.updateView.bind(this));
     }
-    updateTree(dom, template) {
-        let domTree = getTree(template);
-        let renderTree = new parse(domTree, this.data, this.component);
+    updateVM(dom, template) {
+        let domTree = getDomTree(template);
+        let vm = new parse(domTree, this.data, this.component);
         this.parentDom = dom;
         this.domTree = domTree;
-        this.renderTree = renderTree;
+        this.vm = vm;
     }
     getTree() {
-        return this.renderTree;
+        return this.vm;
     }
     updateView() {
         this.data._refs = {};
-        let newTree = new parse(this.domTree, this.data, this.component);
-        let oldTree = this.renderTree;
-        this.renderTree = newTree;
+        let newVM = new parse(this.domTree, this.data, this.component);
+        let oldVM = this.vm;
+        this.vm = newVM;
         if (this._accpet) {
-            compare(oldTree, newTree, this.parentDom, this.data);
+            compare(oldVM, newVM, this.parentDom, this.data);
         }
     }
 }
 
-function getTree(template) {
+function getDomTree(template) {
     let tree;
     let handler = new htmlparser.DomHandler((error, dom) => {
         if (error) {

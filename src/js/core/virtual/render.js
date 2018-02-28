@@ -33,6 +33,10 @@ function creatByCommon(fragment, element) {
 function creatByText(fragment, element) {
     let text = document.createTextNode(element.data);
     fragment.appendChild(text);
+
+    if (element.model) {
+        element.model(text);
+    }
 }
 
 function creatByTag(fragment, element, data) {
@@ -42,6 +46,10 @@ function creatByTag(fragment, element, data) {
 
     if (element.event) {
         element.event.addEventListener(dom);
+    }
+
+    if (element.model) {
+        element.model(dom);
     }
 
     if (element.attribs.hasOwnProperty("ref")) {

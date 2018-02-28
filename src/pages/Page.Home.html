@@ -1,13 +1,5 @@
-<div v-if="status == 'continued'">
-    now there are {{array.length}} elements in an array as below, and it will be changed after {{timer}} seconds
+<div v-if="array1.length > 0">
+    {{array1[0].name}}<br>
+    {{array1[0].age}}<br>
+    {{array1[0].gender}}<br>
 </div>
-<div v-else>
-    now it only contained {{array.length}} elements
-</div>
-<br>
-<div v-for="num in array">
-    {{num}}
-</div>
-<br>
-<p class="p1" v-bind="{class: status}">this example drive by view controller "Page.Home.js" and template of "Page.Home.html"</p>
-<button v-on:click="restart()" ref="button">reset</button>
