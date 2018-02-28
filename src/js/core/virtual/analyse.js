@@ -1,4 +1,6 @@
 import deepClone from "../util/clone"
+import watch from "./watch"
+import Dep from "./dep"
 
 const hooks = [
     {
@@ -17,6 +19,11 @@ const hooks = [
         level: 0
     },
     {
+        test: /^v\-for$/,
+        use: forOrder,
+        level: 0
+    },
+    {
         test: /^v\-show$/,
         use: showOrder,
         level: 1
@@ -32,9 +39,9 @@ const hooks = [
         level: 1
     },
     {
-        test: /^v\-for$/,
-        use: forOrder,
-        level: 2
+        test: /^v\-model$/,
+        use: modelOrder,
+        level: 1
     },
     {
         test: /^ref$/,
@@ -42,6 +49,55 @@ const hooks = [
         level: 3
     }
 ];
+
+function modelOrder(params, go) {
+    let {element, domTree, properties, attr} = params;
+    let content = attr.value;
+    let inputType = element.attribs.type;
+
+    removeHook(element.attribs, attr.name);
+    element.model = (dom) => {
+        new watch(properties, dom, content, (node, newVal) => {
+            if (inputType == "radio") {
+                if (node.value == newVal) {
+                    node.checked = true;
+                } else {
+                    node.checked = false;
+                }
+            } else if (inputType == "checkbox") {
+                if (newVal.indexOf(node.value) >= 0) {
+                    node.checked = true;
+                } else {
+                    node.checked = false;
+                }
+            } else {
+                setTimeout(() => { // set a Timeout to avoid cannot set a value when child elements of select haven't been rendered.
+                    node.value = newVal;
+                }, 1);
+            }
+        });
+
+        dom.addEventListener('input', (e) => {
+            if (properties[content] != e.target.value) {
+                properties[content] = e.target.value;
+            }
+        });
+        dom.addEventListener('change', (e) => {
+            if (inputType == "checkbox" && properties[content] instanceof Array) {
+                if (dom.checked == true) {
+                    properties[content].push(dom.value);
+                } else {
+                    let index = properties[content].indexOf(dom.value);
+                    properties[content].splice(index, 1);
+                }
+            } else if (properties[content] != e.target.value) {
+                properties[content] = e.target.value;
+            }
+        });
+    };
+
+    go(element, domTree, properties);
+}
 
 function refOrder(params, go) {
     let {element, domTree, attr, properties} = params;
@@ -126,7 +182,6 @@ function ifOrder(params, go, stop) {
     let val = evalWithContext(content, properties);
 
     removeHook(element.attribs, attr.name);
-
     if (val) {
         go(element, domTree, properties);
     } else {
@@ -157,16 +212,25 @@ function ifOrder(params, go, stop) {
 
 function bindOrder(params, go, stop) {
     let {attr, element, properties, domTree, cntControl} = params;
-    let tVal = element.attribs[attr.name];
     let evalue = evalWithContext(attr.value, properties);
+    let name = getSuffix() || attr.value;
+    let tVal = element.attribs[name];
 
+    removeHook(element.attribs, attr.name);
+
+    function getSuffix() {
+        let name, index;
+        index = attr.name.indexOf(":") + 1;
+        if (index >= 0) {
+            name = attr.name.slice(index);
+        }
+
+        return name;
+    }
     if (cntControl != undefined) {
         cntControl.cache[tVal] = evalue;
     } else {
         let tVals = tVal ? [tVal] : [];
-        let name = attr.value;
-
-        removeHook(element.attribs, attr.name);
 
         if (typeof evalue == 'object' && evalue.toString() == '[object Object]') {
             Object.keys(evalue).forEach(val => {
@@ -286,9 +350,9 @@ function forOrder(params, go, stop) {
             context[counter] = _index;
         }
 
-        domTree.splice(index(), 0, d); // inserting clone object into domTree
+        domTree.splice(_index, 0, d); // inserting clone object into domTree
 
-        index(index() + 1); // set a new index of "for" statement, because domTree had been insert clone
+        index(_index); // set a new index of "for" statement, because domTree had been insert clone
         _index += 1;
 
         go(d, domTree, context);
@@ -300,27 +364,32 @@ function forOrder(params, go, stop) {
 }
 
 function symbol(text, domTree, index, properties) {
-    text = Object.assign({}, text);
     let reg = text.data.match(/{{([^}}]*?)}}/g);
+    let watchers = [];
 
     if (reg != null || reg != undefined) {
         reg.forEach(function(match) {
-            let val;
-            let start = text.data.indexOf(match);
             let content = match.match(/[^{{}}]*/g)[2];
             content = trim(content);
-            try {
-                val = evalWithContext(content, properties);
-            } catch(err) {
-                throw err;
-            }
+            watchers.push({
+                match,
+                content,
+                recall(node, newVal) {
+                    let data = text.data;
 
-            if (val == undefined) {
-                val = "";
-            }
-
-            text.data = text.data.slice(0, start) + val + text.data.slice(start + match.length, text.data.length);
+                    watchers.forEach(obj => {
+                        let start = data.indexOf(obj.match);
+                        data = data.slice(0, start) + evalWithContext(obj.content, properties) + data.slice(start + obj.match.length);
+                    });
+                    node.nodeValue = data;
+                }
+            });
         });
+        text.model = node => {
+          watchers.forEach(args => {
+              new watch(properties, node, args.content, args.recall)
+          });
+        };
         domTree[index] = text;
     }
 }

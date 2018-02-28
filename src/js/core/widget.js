@@ -75,6 +75,7 @@ class widget {
          * @memberOf widget
          * @name templateString
          */
+        this.methods = this.methods || {};
 
         let _component = new component();
 
@@ -84,42 +85,52 @@ class widget {
             });
         }
 
-        let data = Object.assign({
-            $set: (obj, prop, value) => {
-                let val = value;
-                let type = Object.prototype.toString.call(val);
+        let $set = (obj, prop, value) => {
+            let val = value;
+            let type = Object.prototype.toString.call(val);
 
-                Object.defineProperty(obj, prop, {
-                    enumerable: true,
-                    configurable: true,
-                    get: () => {
-                        return val;
-                    },
-                    set: (newVal) => {
-                        val = newVal;
-                        this._proxy.updateView();
-                    }
-                });
-
-                if (type == '[object Object]' || type == '[object Array]') {
-                    new watch(val, () => {
-                        this._proxy.updateView.call(this._proxy);
-                    });
-                }
-
-                this._proxy.updateView();
-            },
-            $delete: (obj, prop) => {
-                let type = Object.prototype.toString.call(obj);
-
-                if (type == '[object Object]') {
-                    delete obj[prop];
+            Object.defineProperty(obj, prop, {
+                enumerable: true,
+                configurable: true,
+                get: () => {
+                    return val;
+                },
+                set: (newVal) => {
+                    val = newVal;
                     this._proxy.updateView();
-                } else if (type == '[object Array]') {
-                    obj.splice(obj.indexOf(prop), 1);
                 }
+            });
+
+            if (type == '[object Object]' || type == '[object Array]') {
+                new watch(val, () => {
+                    this._proxy.updateView.call(this._proxy);
+                });
             }
-        }, this.data, this.methods);
+
+            this._proxy.updateView();
+        };
+
+        let $get =  (obj, prop) => {
+            let type = Object.prototype.toString.call(obj);
+
+            if (type == '[object Object]') {
+                delete obj[prop];
+                this._proxy.updateView();
+            } else if (type == '[object Array]') {
+                obj.splice(obj.indexOf(prop), 1);
+            }
+        };
+
+        let methods = this.methods ? Object.assign({$set, $get}, this.methods) : {$set, $get};
+
+        Object.keys(methods).forEach(prop => {
+            Object.defineProperty(this.methods, prop, {
+                value: methods[prop],
+                enumerable: false
+            });
+        });
+
+        let data = Object.assign(this.methods, this.data);
 
         this._proxy = new proxy(this.El, data, this.template, _component);
     }

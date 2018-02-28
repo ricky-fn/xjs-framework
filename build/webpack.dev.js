@@ -23,8 +23,5 @@ module.exports = merge(config, {
         // 支持热更新模块
         new webpack.NamedModulesPlugin(),
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.ProvidePlugin({
-            Mock: 'mockjs'
-        })
     ]
 });

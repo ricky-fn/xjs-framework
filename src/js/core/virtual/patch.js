@@ -29,7 +29,10 @@ function patch(oldGroup, newGroup) {
 
     if (patches.length > 0) {
         patches.forEach(cp => {
-            restKeys.splice(restKeys.indexOf(cp.target), 1);
+            let index = restKeys.indexOf(cp.target);
+            if (index >= 0) {
+                restKeys.splice(index, 1);
+            }
             cp.target = okeyMap[cp.target] || nkeyMap[cp.target];
         });
     }
@@ -58,13 +61,14 @@ function patch(oldGroup, newGroup) {
                 target: newEl,
                 index: oldGroup.indexOf(oldEl)
             });
-        } else if (oldEl.type == "text" && (oldEl.data != newEl.data)) {
-            patches.splice(0, 0, {
-                method: "text",
-                target: newEl,
-                index: oldGroup.indexOf(oldEl)
-            });
         }
+        // } else if (oldEl.type == "text" && (oldEl.data != newEl.data)) {
+        //     patches.splice(0, 0, {
+        //         method: "text",
+        //         target: newEl,
+        //         index: oldGroup.indexOf(oldEl)
+        //     });
+        // }
     });
 
     return {

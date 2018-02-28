@@ -4,13 +4,14 @@ import comCnt from "../component/common"
 
 class parseTemplate {
     constructor(domTree, context, component) {
-        let clone = this.parse(deepClone(domTree), context, component);
+        let vm = this.parse(deepClone(domTree), context, component);
 
-        return clone;
+        return vm;
     }
     parse(domTree, context, component) {
         for (let index = 0; index < domTree.length; index++) {
             let element = domTree[index];
+
             if (element.type == "text") {
                 symbol(element, domTree, index, context);
             } else if (element.type == "tag") {
@@ -82,6 +83,7 @@ function makeSequence(recall) {
     let queue = [];
     let flag = true;
     let redirect = [null];
+    let copy = [];
 
     this.push = (member, args) => {
         let level = member.level;
@@ -109,8 +111,9 @@ function makeSequence(recall) {
                     if (flag == true) {
                         redirect.forEach(args => {
                             let params = Object.assign(target.args, args);
+
                             target.handler(params, (element, domTree, properties) => {
-                                redirect.push({
+                                copy.push({
                                     element,
                                     properties,
                                     domTree
@@ -126,7 +129,8 @@ function makeSequence(recall) {
                                 flag = false;
                             });
                         });
-                        redirect.splice(0, 1);
+                        redirect = copy;
+                        copy = [];
                     }
                 });
             })
