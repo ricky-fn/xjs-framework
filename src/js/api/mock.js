@@ -19,4 +19,4 @@ if (process.env.NODE_ENV !== "production") {
     });
 }
 
-export default Mock;
+// export default Mock;

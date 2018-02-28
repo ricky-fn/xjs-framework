@@ -14,9 +14,30 @@
     <!--<meta content="fullscreen=yes,preventMove=no" name="ML-Config">-->
     <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
     <!--<% } %>-->
-    <!--<% for (var css in htmlWebpackPlugin.files.css) { %>-->
-    <!--<link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">-->
-    <!--<% } %>-->
+    <meta content="fullscreen=yes,preventMove=no" name="ML-Config">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
+    <script>
+        (function (doc, win) {
+            var docEl = doc.documentElement;
+            var stylePush = document.createElement('style');
+            var resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize';
+            var styles = '';
+            stylePush.id = 'remSet';
+            document.head.appendChild(stylePush);
+
+            // 计算font-size实现自动缩放
+            var recalc = function () {
+                var clientWidth = docEl.clientWidth;
+                if (!clientWidth) return;
+                var fontSize = 100 * (clientWidth / 720);
+                stylePush.innerHTML = styles + "html { font-size: " + fontSize + 'px !important}';
+            };
+
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window);
+    </script>
 </head>
 <body>
 <div class="app-view" id="appview"></div>
