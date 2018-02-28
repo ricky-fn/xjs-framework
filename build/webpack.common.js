@@ -2,6 +2,12 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const SpritesmithPlugin = require('webpack-spritesmith');
+const spriteTemplate = require('./spriteTemplate');
+
+const useRem = true; // it's a flag to mark the unit of css
+const baseSize = 100; // setting base size to convert px to rem
+
 const filePaths = {
     dev: "./src/",
     dist: "../dist/",
@@ -22,7 +28,7 @@ const config = {
             },
             {
                 test: /\.(png|svg|jpg|gif)$/,
-                use: ['file-loader']
+                use: ['file-loader?name=i/[hash].[ext]']
             },
             {
                 test: /\.js$/,
@@ -35,6 +41,9 @@ const config = {
                 }
             }
         ]
+    },
+    resolve: {
+        modules: ["node_modules", "spritesmith-generated"]
     },
     devtool: 'inline-source-map',
     plugins: [
@@ -51,8 +60,28 @@ const config = {
             title: "xjs-framework",
             template: filePaths.dev + "index.html"
         }),
-        new webpack.ProvidePlugin({
-            Mock: 'mockjs'
+        new SpritesmithPlugin({
+            src: {
+                cwd: path.resolve(__dirname, '../src/images/icons'),
+                glob: '*.png'
+            },
+            target: {
+                image: path.resolve(__dirname, '../src/images/sprite.png'),
+                css: [
+                    [path.resolve(__dirname, '../src/sass/_sprite.scss'), {
+                        format: 'function_based_template'
+                    }]
+                ]
+            },
+            customTemplates: {
+                'function_based_template': spriteTemplate(useRem, baseSize)
+            },
+            apiOptions: {
+                cssImageRef: "../images/sprite.png"
+            },
+            spritesmithOptions: {
+                padding: 10
+            }
         })
     ]
 };
