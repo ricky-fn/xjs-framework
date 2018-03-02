@@ -50,13 +50,12 @@ xjs.createView = function (prop, param, node, defaultNode) {
     let containerNode = document.getElementById('appview');
 
     if (!node) {
-        node = document.createElement('div');
-        $(containerNode).append(node);
+        node = containerNode;
+        // $(containerNode).append(node);
     } else {
         if (!defaultNode) {
-            node = $('<div></div>').appendTo(node).get(0);
-        } else {
-            node = $(node).get(0);
+            // node = $('<div></div>').appendTo(node).get(0);
+            node = containerNode.insertBefore(node);
         }
     }
 

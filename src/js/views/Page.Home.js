@@ -5,20 +5,16 @@ import template from "../../pages/Page.Home.html"
 export default xjs.extendView(widget, {
     template,
     data: {
-        array1: []
+        array1: {}
     },
     methods: {
         startup() {
             setTimeout(() => {
-                this.array1.push({
-                    name: "ricky",
-                    age: "46",
-                    gender: "Male"
-                })
+                this.array1[1] = "222222";
             }, 2000);
-            setTimeout(() => {
-                this.array1[0].age = 42
-            }, 3000);
+            // setTimeout(() => {
+            //     this.array1[0].age = 42
+            // }, 3000);
         }
     }
 });

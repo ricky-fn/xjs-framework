@@ -80,7 +80,7 @@ function modelOrder(params, go) {
         dom.addEventListener('input', (e) => {
             let data = evalWithContext(content, properties);
             if (data != e.target.value) {
-                evalWithContext(content + '=' + e.target.value, properties);
+                evalWithContext(content + '= "' + e.target.value + '"', properties);
             }
         });
         dom.addEventListener('change', (e) => {
@@ -266,14 +266,8 @@ function eventOrder(params, go, stop) {
 
     eventName = eventName.match(/([^v\-on:].*)/)[0];
 
-    element.event = {
-        name: eventName,
-        addEventListener: (dom) => {
-            dom.addEventListener(eventName, eventCall);
-        },
-        removeEventListener: (dom) => {
-            dom.removeEventListener(eventName, eventCall);
-        }
+    element.model = dom => {
+        dom.addEventListener(eventName, eventCall);
     };
 
     function eventCall(e) {
@@ -322,21 +316,22 @@ function showOrder(params, go, stop) {
 
 function forOrder(params, go, stop) {
     let {element, domTree, index, properties, attr} = params;
-    let sentence = attr.value;
-    let mulArg = sentence.match(/^\(.*\)/g);
+    let code = attr.value;
     let inner, counter;
 
-    let source = sentence.match(/\w+$/g);
-    source = properties[source[0]];
+    let args = code.split(" in ");
+    let mulArg = args[0].match(/^\(.*\)/g);
+    let source = trim(args[1]);
+
+    source = evalWithContext(source, properties);
 
     removeHook(element.attribs, attr.name);
     if (mulArg != null && mulArg.length == 1) {
-        let args = mulArg[0].match(/[^(\(\)\,\s)][\w+]*/g);
-        inner = args[0];
-        counter = args[1];
+        let params = mulArg[0].match(/[^(\(\)\,\s)][\w+]*/g);
+        inner = params[0];
+        counter = params[1];
     } else {
-        inner = sentence.match(/^\w+/g);
-        inner = inner[0];
+        inner = trim(args[0]);
     }
 
     let _index = 0;
@@ -347,14 +342,15 @@ function forOrder(params, go, stop) {
         let newKey = keyPlus(d.attribs["data-key"], _index); // copy key from original element
         d.attribs["data-key"] = newKey;
 
-        let context = inheritProp(properties, inner, source[key]);
+        // let context = inheritProp(properties, inner, source[key]);
+        let context = inheritProp(properties, inner, source instanceof Array ? source[key] : key);
         if (mulArg != null && mulArg.length == 1) {
             context[counter] = _index;
         }
 
-        domTree.splice(_index, 0, d); // inserting clone object into domTree
+        domTree.splice(index(), 0, d); // inserting clone object into domTree
 
-        index(_index); // set a new index of "for" statement, because domTree had been insert clone
+        index(index() + 1); // set a new index of "for" statement, because domTree had been cloned
         _index += 1;
 
         go(d, domTree, context);
