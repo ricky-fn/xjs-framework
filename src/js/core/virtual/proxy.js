@@ -18,6 +18,12 @@ class proxy {
             writable: true,
             value: {}
         });
+        Object.defineProperty(data, "$set", {
+            value: (obj, prop, value) => {
+                new watch(obj, prop, value, this.updateView.bind(this));
+                this.updateView();
+            }
+        });
 
         this._accpet = true;
         this.data = data;
@@ -34,6 +40,8 @@ class proxy {
     }
     stopRender() {
         this._accpet = false;
+        this.data.$refs = {};
+        // this.data._refs = {};
     }
     startObserve(data) {
         new watch(data, this.updateView.bind(this));
@@ -49,11 +57,11 @@ class proxy {
         return this.vm;
     }
     updateView() {
-        this.data._refs = {};
-        let newVM = new parse(this.domTree, this.data, this.component);
-        let oldVM = this.vm;
-        this.vm = newVM;
         if (this._accpet) {
+            this.data._refs = {};
+            let newVM = new parse(this.domTree, this.data, this.component);
+            let oldVM = this.vm;
+            this.vm = newVM;
             compare(oldVM, newVM, this.parentDom, this.data);
         }
     }
