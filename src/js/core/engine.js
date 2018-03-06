@@ -58,7 +58,6 @@ xjs.createView = function (prop, param, node, defaultNode) {
             node = containerNode.insertBefore(node);
         }
     }
-
     return new prop(node, param);
 };
 
