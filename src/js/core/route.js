@@ -86,9 +86,9 @@ class Router {
      * })；
      */
     define(config) {
-        var authorize = config.authorize || false;
-        var path = config.path;
-        var page = config.page;
+        let authorize = config.authorize || false;
+        let path = config.path;
+        let page = config.page;
 
         if (page == undefined)
             throw "please aim to which one page are used to render for this path";
@@ -208,6 +208,7 @@ class Router {
         let that = this;
 
         function onHashChange() {
+
             let url = tool.url();
             if (url.hash) {
                 that.navigator({
