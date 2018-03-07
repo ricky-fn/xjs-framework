@@ -1,10 +1,9 @@
-import parse from "./parse"
+import parser from "./parse"
 import render from "./render"
 import watch from "../watch"
 import compare from "./compare"
 import addKey from "../util/addKey"
-
-const htmlparser = require("htmlparser2");
+import {parse} from "himalaya"
 
 class proxy {
     constructor(dom, data, template, component) {
@@ -48,7 +47,7 @@ class proxy {
     }
     updateVM(dom, template) {
         let domTree = getDomTree(template);
-        let vm = new parse(domTree, this.data, this.component);
+        let vm = new parser(domTree, this.data, this.component);
         this.parentDom = dom;
         this.domTree = domTree;
         this.vm = vm;
@@ -59,7 +58,7 @@ class proxy {
     updateView() {
         if (this._accpet) {
             this.data._refs = {};
-            let newVM = new parse(this.domTree, this.data, this.component);
+            let newVM = new parser(this.domTree, this.data, this.component);
             let oldVM = this.vm;
             this.vm = newVM;
             compare(oldVM, newVM, this.parentDom, this.data);
@@ -68,19 +67,10 @@ class proxy {
 }
 
 function getDomTree(template) {
-    let tree;
-    let handler = new htmlparser.DomHandler((error, dom) => {
-        if (error) {
-            throw error;
-        } else {
-            tree = addKey(dom);
-        }
-    });
-    let parser = new htmlparser.Parser(handler);
-    parser.write(template);
-    parser.end();
+    let json = parse(template);
+    addKey(json);
 
-    return tree;
+    return json;
 }
 
 export default proxy;

@@ -38,6 +38,7 @@
     "css-loader": "^0.28.7",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.5",
+    "himalaya": "^1.0.1",
     "html-webpack-plugin": "^2.30.1",
     "htmlparser2": "^3.9.2",
     "mockjs": "^1.0.1-beta3",

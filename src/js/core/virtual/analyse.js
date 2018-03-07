@@ -53,9 +53,9 @@ const hooks = [
 function modelOrder(params, go) {
     let {element, domTree, properties, attr} = params;
     let content = attr.value;
-    let inputType = element.attribs.type;
+    let inputType = element.attributes.find(el => el.key == "type").value;
 
-    removeHook(element.attribs, attr.name);
+    removeHook(element.attributes, attr.key);
     element.model = (dom) => {
         new watch(properties, dom, content, (node, newVal) => {
             if (inputType == "radio") {
@@ -104,7 +104,8 @@ function modelOrder(params, go) {
 function refOrder(params, go) {
     let {element, domTree, attr, properties} = params;
     let refs = properties._refs[attr.value];
-    let key = element.attribs["data-key"];
+    let key = element.attributes.find(el => el.key == "data-key").value;
+
     if (refs == undefined) {
         properties._refs[attr.value] = [key];
     } else {
@@ -120,7 +121,7 @@ function elseIfOrder(params, go, stop) {
     let content = attr.value;
     let result = evalWithContext(content, properties);
 
-    removeHook(element.attribs, attr.name);
+    removeHook(element.attributes, attr.key);
 
     if (element.hasOwnProperty("_if")) {
         if (element._if) {
@@ -150,10 +151,10 @@ function elseIfOrder(params, go, stop) {
 
         if (
             nextSibling != undefined &&
-            nextSibling.type == "tag" &&
+            nextSibling.type == "element" &&
             (
-                nextSibling.attribs.hasOwnProperty("v-else") ||
-                nextSibling.attribs.hasOwnProperty("v-else-if")
+                nextSibling.attributes.find(el => el.key == "v-else") ||
+                nextSibling.attributes.find(el => el.key == "v-else-if")
             )
         ) {
             nextSibling._if = result;
@@ -164,7 +165,7 @@ function elseIfOrder(params, go, stop) {
 function elseOrder(params, go, stop) {
     let {element, domTree, index, properties, attr} = params;
 
-    removeHook(element.attribs, attr.name);
+    removeHook(element.attributes, attr.key);
 
     if (element.hasOwnProperty("_if")) {
         if (!element._if) {
@@ -183,7 +184,7 @@ function ifOrder(params, go, stop) {
     let content = attr.value;
     let val = evalWithContext(content, properties);
 
-    removeHook(element.attribs, attr.name);
+    removeHook(element.attributes, attr.key);
     if (val) {
         go(element, domTree, properties);
     } else {
@@ -201,10 +202,10 @@ function ifOrder(params, go, stop) {
 
         if (
             nextSibling != undefined &&
-            nextSibling.type == "tag" &&
+            nextSibling.type == "element" &&
             (
-                nextSibling.attribs.hasOwnProperty("v-else") ||
-                nextSibling.attribs.hasOwnProperty("v-else-if")
+                nextSibling.attributes.find(el => el.key == "v-else") ||
+                nextSibling.attributes.find(el => el.key == "v-else-if")
             )
         ) {
             nextSibling._if = val;
@@ -215,54 +216,52 @@ function ifOrder(params, go, stop) {
 function bindOrder(params, go, stop) {
     let {attr, element, properties, domTree, cntControl} = params;
     let evalue = evalWithContext(attr.value, properties);
-    let name = getSuffix() || attr.value;
-    let tVal = element.attribs[name];
+    let args = getSuffix(attr);
+    removeHook(element.attributes, attr.key);
 
-    removeHook(element.attribs, attr.name);
-
-    function getSuffix() {
-        let name, index;
-        index = attr.name.indexOf(":") + 1;
-        if (index >= 0) {
-            name = attr.name.slice(index);
-        }
-
-        return name;
-    }
-    if (cntControl != undefined) {
-        cntControl.cache[tVal] = evalue;
-    } else {
-        let tVals = tVal ? [tVal] : [];
+    // if (cntControl != undefined) {
+    //     cntControl.cache[tVal] = evalue;
+    // } else {
+    //     let targetAttr = element.attributes.find(el => el.key == name);
+    //     let tVal = targetAttr ? targetAttr.value : null;
+    //     let tVals = tVal ? [tVal] : [];
 
         if (typeof evalue == 'object' && evalue.toString() == '[object Object]') {
-            Object.keys(evalue).forEach(val => {
-                let flag = evalue[val];
-                name = val;
-                if (element.attribs[val] != undefined) {
-                    tVals = [element.attribs[val]];
-                    tVals.push(flag);
-                } else {
-                    tVals = [flag];
-                }
+            Object.keys(evalue).forEach(attr => {
+                // let flag = eattrue[attr];
+                // let presentAttr = element.attributes.find(el => el.key == attr);
+                // if (presentAttr != undefined) {
+                //     tVals = [presentAttr.value];
+                //     tVals.push(flag);
+                // } else {
+                //     tVals = [flag];
+                // }
 
+                setAttribute(element, attr, evalue[attr]);
             });
         } else if (evalue instanceof Array) {
-            tVals = tVals.concat(evalue);
+            setAttribute(element, args, evalue[0]);
         } else {
-            tVals.push(evalue);
+            // tVals.push(evalue);
+            setAttribute(element, args, evalue);
         }
-        element.attribs[name] = tVals.join(' ');
-    }
+        // if (!targetAttr) {
+        //     element.attributes.push({key: name, value: tVals.join(' ')});
+        // } else {
+        //     targetAttr.value = tVals.join(' ');
+        // }
+        // element.attributes[name] = tVals.join(' ');
+    // }
 
     go(element, domTree, properties);
 }
 
 function eventOrder(params, go, stop) {
     let {attr, element, properties, domTree} = params;
-    let eventName = attr.name;
+    let eventName = attr.key;
     let eventCallName = attr.value;
 
-    removeHook(element.attribs, attr.name);
+    removeHook(element.attributes, attr.key);
 
     eventName = eventName.match(/([^v\-on:].*)/)[0];
 
@@ -297,18 +296,18 @@ function showOrder(params, go, stop) {
     let content = attr.value;
     let val;
 
-    removeHook(element.attribs, attr.name);
+    removeHook(element.attributes, attr.key);
     try {
         val = evalWithContext(content, properties);
     } catch(err) {
         throw err;
     }
 
-    element.attribs.style = element.attribs.style ? element.attribs.style : "";
+    element.attributes.style = element.attributes.style ? element.attributes.style : "";
     if (val) {
-        element.attribs.style += "display: block;";
+        element.attributes.style += "display: block;";
     } else {
-        element.attribs.style += "display: none;";
+        element.attributes.style += "display: none;";
     }
 
     go(element, domTree, properties);
@@ -325,7 +324,7 @@ function forOrder(params, go, stop) {
 
     source = evalWithContext(source, properties);
 
-    removeHook(element.attribs, attr.name);
+    removeHook(element.attributes, attr.key);
     if (mulArg != null && mulArg.length == 1) {
         let params = mulArg[0].match(/[^(\(\)\,\s)][\w+]*/g);
         inner = params[0];
@@ -339,8 +338,12 @@ function forOrder(params, go, stop) {
 
     for (let key in source) {
         let d = deepClone(element);
-        let newKey = keyPlus(d.attribs["data-key"], _index); // copy key from original element
-        d.attribs["data-key"] = newKey;
+        let keyIndex = d.attributes.findIndex(el => {
+            return el.key == "data-key";
+        });
+        let keyVal = d.attributes[keyIndex];
+        let newKey = keyPlus(keyVal.value, _index); // copy key from original element
+        keyVal.value = newKey; // put new key to cover the old key
 
         // let context = inheritProp(properties, inner, source[key]);
         let context = inheritProp(properties, inner, source instanceof Array ? source[key] : key);
@@ -362,7 +365,7 @@ function forOrder(params, go, stop) {
 }
 
 function symbol(text, domTree, index, properties) {
-    let reg = text.data.match(/{{([^}}]*?)}}/g);
+    let reg = text.content.match(/{{([^}}]*?)}}/g);
     let watchers = [];
 
     if (reg != null || reg != undefined) {
@@ -373,23 +376,43 @@ function symbol(text, domTree, index, properties) {
                 match,
                 content,
                 recall(node, newVal) {
-                    let data = text.data;
+                    let content = text.content;
 
                     watchers.forEach(obj => {
-                        let start = data.indexOf(obj.match);
-                        data = data.slice(0, start) + evalWithContext(obj.content, properties) + data.slice(start + obj.match.length);
+                        let start = content.indexOf(obj.match);
+                        content = content.slice(0, start) + evalWithContext(obj.content, properties) + content.slice(start + obj.match.length);
                     });
-                    node.nodeValue = data;
+                    node.nodeValue = content;
                 }
             });
         });
         text.model = node => {
-          watchers.forEach(args => {
-              new watch(properties, node, args.content, args.recall)
-          });
+            watchers.forEach(args => {
+                new watch(properties, node, args.content, args.recall)
+            });
         };
         domTree[index] = text;
     }
+}
+
+function setAttribute(target, key, value) {
+    let copy = target.attributes.find(el => el.key == key);
+
+    if (!copy) {
+        target.attributes.push({key, value});
+    } else {
+        copy.value += ' ' + value;
+    }
+}
+
+function getSuffix(attr) {
+    let name, index;
+    index = attr.key.indexOf(":") + 1;
+    if (index >= 0) {
+        name = attr.key.slice(index);
+    }
+
+    return name;
 }
 
 function inheritProp(prop, key, val) {
@@ -415,7 +438,10 @@ function keyPlus(val, add) {
 }
 
 function removeHook(group, name) {
-    delete group[name];
+    let index = group.findIndex(el => {
+        return el.key == name;
+    });
+    group.splice(index, 1);
 }
 
 

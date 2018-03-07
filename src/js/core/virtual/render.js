@@ -14,7 +14,7 @@ function render(domTree, data) {
 
 function combine(domTree, fragment, data) {
     domTree.forEach(element => {
-        if (element.type == "tag") {
+        if (element.type == "element") {
             let dom = creatByTag(fragment, element, data);
             combine(element.children, dom, data);
         } else if (element.type == "text") {
@@ -26,12 +26,12 @@ function combine(domTree, fragment, data) {
 }
 
 function creatByCommon(fragment, element) {
-    let common = document.createComment(element.data);
+    let common = document.createComment(element.content);
     fragment.appendChild(common);
 }
 
 function creatByText(fragment, element) {
-    let text = document.createTextNode(element.data);
+    let text = document.createTextNode(element.content);
     fragment.appendChild(text);
 
     if (element.model) {
@@ -40,9 +40,9 @@ function creatByText(fragment, element) {
 }
 
 function creatByTag(fragment, element, data) {
-    let dom = document.createElement(element.name);
+    let dom = document.createElement(element.tagName);
 
-    fragment.appendChild(setAttribs(dom, element.attribs));
+    fragment.appendChild(setAttribs(dom, element.attributes));
 
     if (element.event) {
         element.event.addEventListener(dom);
@@ -52,7 +52,7 @@ function creatByTag(fragment, element, data) {
         element.model(dom);
     }
 
-    if (element.attribs.hasOwnProperty("ref")) {
+    if (element.attributes.find(el => el.key == "ref")) {
         refs.insertRefs(data, element, dom);
     }
 
@@ -60,8 +60,8 @@ function creatByTag(fragment, element, data) {
 }
 
 function setAttribs(dom, attribs) {
-    Object.keys(attribs).forEach(attr => {
-        dom.setAttribute(attr, attribs[attr]);
+    attribs.forEach(attr => {
+        dom.setAttribute(attr.key, attr.value);
     });
 
     return dom;

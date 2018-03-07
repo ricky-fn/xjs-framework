@@ -9,14 +9,14 @@ function patch(oldGroup, newGroup) {
     let nkeyMap = {};
 
     oldGroup.forEach(el => {
-        let key = el.attribs ? el.attribs["data-key"] : undefined;
+        let key = el.attributes ? el.attributes.find(el => el.key == "data-key").value : undefined;
         if (key !== undefined) {
             okeyMap[key] = el;
             oldKeys.push(key);
         }
     });
     newGroup.forEach(el => {
-        let key = el.attribs ? el.attribs["data-key"] : undefined;
+        let key = el.attributes ? el.attributes.find(el => el.key == "data-key").value : undefined;
         if (key !== undefined) {
             nkeyMap[key] = el;
             newKeys.push(key);
@@ -45,8 +45,8 @@ function patch(oldGroup, newGroup) {
             return;
         }
 
-        let oldArStr = JSON.stringify(oldEl.attribs);
-        let newArStr = JSON.stringify(newEl.attribs);
+        let oldArStr = JSON.stringify(oldEl.attributes);
+        let newArStr = JSON.stringify(newEl.attributes);
         // if (oldEl.event) {
         //     patches.splice(0, 0, {
         //         method: "event",

@@ -45,23 +45,20 @@ function applyPatch(patch, parent, data) {
             break;
         case "attr":
             target = parent.childNodes[patch.index];
-            let attrs = patch.target.attribs;
-            Object.keys(attrs).forEach(name => {
-                let prop = target.attributes[name];
+            let attrs = patch.target.attributes;
+            attrs.forEach(attr => {
+                let prop = target.attributes[attr.key];
                 let nodeValue = prop ? prop.nodeValue : undefined;
-                // if (nodeValue == undefined) {
-                //     target.setAttribute(name);
-                // } else if (nodeValue != attrs[name]) {
-                //     target.setAttribute(name, attrs[name]);
-                // }
-                // if (nodeValue == undefined && )
+
                 if (nodeValue != attrs[name]) {
-                    target.setAttribute(name, attrs[name]);
+                    target.setAttribute(attr.key, attr.value);
                 }
             });
+
+            // if attribute has been removed from vm, it should be deleted from dom in here
             for (let i = 0; i < target.attributes.length; i++) {
                 let name = target.attributes[i].name;
-                if (attrs[name] == undefined) {
+                if (attrs.find(el => el.key == name) == undefined) {
                     target.removeAttribute(name);
                 }
             }
