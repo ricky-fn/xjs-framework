@@ -1,8 +1,8 @@
 function insertRefs (data, element, dom) {
     data.$refs = data.$refs || {};
-    let name = element.attribs["ref"];
+    let name = element.attributes.find(el => el.key == "ref").value;
     let target = data.$refs[name];
-    let key = element.attribs["data-key"];
+    let key = element.attributes.find(el => el.key == "data-key");
 
     data.$refs = data.$refs || {};
     if (target == undefined) {
@@ -13,10 +13,10 @@ function insertRefs (data, element, dom) {
         }
     } else if (target instanceof Array) {
         // target.push(dom);
-        target.splice(data._refs[name].indexOf(key), 0, dom);
+        target.splice(data._refs[name].indexOf(key.value), 0, dom);
     } else {
         target = [target];
-        target.splice(data._refs[name].indexOf(key), 0, dom);
+        target.splice(data._refs[name].indexOf(key.value), 0, dom);
     }
 
     data.$refs[name] = target;

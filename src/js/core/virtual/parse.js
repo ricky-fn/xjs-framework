@@ -11,10 +11,9 @@ class parseTemplate {
     parse(domTree, context, component) {
         for (let index = 0; index < domTree.length; index++) {
             let element = domTree[index];
-
             if (element.type == "text") {
                 symbol(element, domTree, index, context);
-            } else if (element.type == "tag") {
+            } else if (element.type == "element") {
                 this.analyseHook(
                     (add) => {
                         index = add || index;
@@ -42,13 +41,10 @@ class parseTemplate {
 
         let queue = new makeSequence(recall);
 
-        Object.keys(element.attribs).forEach(member => {
+        element.attributes.forEach(member => {
             hooks.forEach(match => {
-                if (match.test.test(member)) {
-                    let attr = {
-                        name: member,
-                        value : element.attribs[member]
-                    };
+                if (match.test.test(member.key)) {
+                    let attr = member;
 
                     queue.push(match, {
                         element,

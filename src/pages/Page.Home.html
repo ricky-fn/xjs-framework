@@ -1,4 +1,13 @@
 <i class="icon icon-1"></i>
 <div v-for="i in array1">
     {{i}}
+    <div v-if="i < 2">
+        true
+    </div>
+    <div v-else-if="i >= 2 && i < 5">
+        false
+    </div>
+    <div v-else>
+        end
+    </div>
 </div>

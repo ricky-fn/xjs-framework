@@ -1,6 +1,5 @@
 import Route from "./core/route.js"
 import Home from "./views/Page.Home.js"
-import Test from "./views/Page.Test.js"
 
 const Router = new Route();
 /**
@@ -25,9 +24,9 @@ Router.define({
     page: Home
 });
 
-Router.define({
-    path: 'Test',
-    page: Test
-});
+// Router.define({
+//     path: 'Test',
+//     page: Test
+// });
 
 export default Router;
