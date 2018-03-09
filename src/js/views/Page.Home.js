@@ -9,12 +9,7 @@ export default xjs.extendView(widget, {
     },
     methods: {
         startup() {
-            // setTimeout(() => {
-            //     this.array1[1] = "222222";
-            // }, 2000);
-            // setTimeout(() => {
-            //     this.array1[0].age = 42
-            // }, 3000);
+            window.useReady = 1;
         }
     }
 });
