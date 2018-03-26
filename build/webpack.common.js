@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const SpritesmithPlugin = require('webpack-spritesmith');
 const spriteTemplate = require('./spriteTemplate');
 
@@ -18,16 +17,20 @@ const filePaths = {
 
 const config = {
     entry: {
-        app: path.resolve(__dirname, filePaths.js + 'app.js')
+        app: [
+            '@babel/polyfill',
+            path.resolve(__dirname, filePaths.js + 'app.js')
+        ]
     },
     module: {
         rules: [
             {
                 test: /\.html$/,
-                use: "raw-loader"
+                use: "html-loader",
+                exclude: /index\.html$/,
             },
             {
-                test: /\.(png|svg|jpg|gif)$/,
+                test: /\.(png|svg|jpg|gif|ico)$/,
                 use: ['file-loader?name=i/[hash].[ext]']
             },
             {
@@ -36,7 +39,15 @@ const config = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ["@babel/preset-env"]
+                        presets: ["@babel/preset-env"],
+                        plugins: ["@babel/plugin-transform-runtime"]
+                        // plugins: [
+                        //     ["@babel/plugin-transform-runtime", {
+                        //         // "regenerator": true,
+                        //         // "moduleName": "@babel/runtime",
+                        //         useBuiltIns: true
+                        //     }]
+                        // ]
                     }
                 }
             }
@@ -45,20 +56,23 @@ const config = {
     resolve: {
         modules: ["node_modules", "spritesmith-generated"]
     },
-    devtool: 'inline-source-map',
     plugins: [
-        // 清除dist文件夹
-        new CleanWebpackPlugin(["dist"], {
-            root: path.resolve(__dirname, "../")
-        }),
-        // 设置全局变量
-        new webpack.ProvidePlugin({
-            $: 'zepto-modules'
-        }),
         // 自动生成index.html
         new HtmlWebpackPlugin({
-            title: "xjs-framework",
-            template: filePaths.dev + "index.html"
+            title: "一号站品牌官网欢迎您",
+            keyword: "一号站,一号站官网",
+            description: "一号站品牌官网,是一号站娱乐倾力打造的品牌推广平台,公司前身是菲律宾第一游戏平台多宝，一号站平台自2003年成立以来就获得了当地政府颁发的CEZA牌照。平台资金实力雄厚，广大玩家可以放心娱乐！",
+            favicon: filePaths.images + "favicon.ico",
+            template: filePaths.dev + 'index.html',
+            hash: true,
+            inject: true,
+            minify: {
+                removeComments: true,        //去注释
+                collapseWhitespace: true,    //压缩空格
+                removeAttributeQuotes: true  //去除属性引用
+                // more options:
+                // https://github.com/kangax/html-minifier#options-quick-reference
+            }
         }),
         new SpritesmithPlugin({
             src: {

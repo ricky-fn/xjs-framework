@@ -1,37 +1,28 @@
 import axios from "axios"
 
 const httpConfig = {
-    loginCode: 0,
-    loginCall: function () {},
-    beforeSend: function () {},
-    beforeResponse: function () {}
+    failCode: null,
+    successCode: null,
+    loginCode: null,
+    loginCall: null,
+    beforeSend: null,
+    beforeResponse: null
 };
-
-// const request = axios.create({
-//     transformRequest: [data => {
-//         config.beforeSend(data);
-//         return data;
-//     }],
-//     transformResponse: [data => {
-//         if (data.code == config.loginCode) {
-//             config.loginCall();
-//         }
-//     }]
-// });
 
 class http {
     constructor(conf) {
-        this._config = conf;
+        this._config = Object.assign({}, httpConfig, conf);
     }
     request(param, subConf) {
         subConf = Object.assign({}, this._config, subConf);
 
         let def = new Promise((resolve, reject) => {
             axios(Object.assign({}, {
-                transformRequest: [data => {
-                    subConf.beforeSend && subConf.beforeSend(data);
-                    return data;
-                }],
+                // transformRequest: [(data, header) => {
+                //     subConf.beforeSend && subConf.beforeSend(data);
+                //     debugger;
+                //     return JSON.stringify(data);
+                // }],
                 transformResponse: [data => {
                     let obj = JSON.parse(data);
                     if (obj.code == subConf.loginCode) {
@@ -46,6 +37,8 @@ class http {
                 let data = JSON.parse(res.data);
                 if (subConf.skipError) {
                     resolve(data);
+                } else if (subConf.failCode == data.code) {
+                    reject(data);
                 } else {
                     resolve(data.data);
                 }

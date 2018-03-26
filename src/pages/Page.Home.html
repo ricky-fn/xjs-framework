@@ -1,5 +1,5 @@
-<i class="icon icon-1"></i>
-<div v-for="i in array1">
+<i class="icon icon-1" v-on:click="continued()"></i>
+<div v-for="i in array1" ref="div">
     {{i}}
     <div v-if="i < 2">
         true
@@ -11,3 +11,4 @@
         end
     </div>
 </div>
+{{message.a.b.c}}

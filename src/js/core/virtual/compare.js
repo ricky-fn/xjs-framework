@@ -30,11 +30,11 @@ function applyPatch(patch, parent, data) {
             let gather = target.querySelectorAll("[ref]");
 
             refs.removeRefs(data, target);
-            gather.forEach(target => {
+            Array.forEach(gather, target => {
                 refs.removeRefs(data, target);
             });
 
-            target.remove();
+            target.parentNode.removeChild(target);
             break;
         case "replace":
             target = parent.childNodes[patch.index];

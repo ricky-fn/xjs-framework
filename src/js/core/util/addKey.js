@@ -1,6 +1,6 @@
 function addKey(tree) {
     let keys = [];
-    tree.forEach(el => {
+    tree.forEach(vNode => {
         let key, obj;
         do {
             key = createHexRandom();
@@ -10,16 +10,18 @@ function addKey(tree) {
 
         obj = {key: "data-key", value: key};
 
-        if (el.type == "element" || el.type == "text") {
-            if (el.attributes) {
-                el.attributes.push(obj);
+        if (vNode.type == "element" || vNode.type == "text") {
+            if (vNode.attributes) {
+                vNode.attributes.push(obj);
             } else {
-                el.attributes = [obj];
+                vNode.attributes = [obj];
             }
+        } else if (el.type == "comment") {
+            vNode.attributes = [obj];
         }
 
-        if (el.children) {
-            addKey(el.children);
+        if (vNode.children) {
+            addKey(vNode.children);
         }
     });
 

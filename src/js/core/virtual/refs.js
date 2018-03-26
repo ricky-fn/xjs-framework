@@ -1,36 +1,36 @@
-function insertRefs (data, element, dom) {
-    data.$refs = data.$refs || {};
-    let name = element.attributes.find(el => el.key == "ref").value;
-    let target = data.$refs[name];
-    let key = element.attributes.find(el => el.key == "data-key");
+function insertRefs (vm, element, dom) {
+    vm.$refs = vm.$refs || {};
+    let name = Array.find(element.attributes, el => el.key == "ref").value;
+    let target = vm.$refs[name];
+    let key = Array.find(element.attributes, el => el.key == "data-key");
 
-    data.$refs = data.$refs || {};
+    vm.$refs = vm.$refs || {};
     if (target == undefined) {
-        if (data._refs[name].length == 1) {
+        if (vm._refs[name].length == 1) {
             target = dom;
         } else {
             target = [dom];
         }
     } else if (target instanceof Array) {
         // target.push(dom);
-        target.splice(data._refs[name].indexOf(key.value), 0, dom);
+        target.splice(vm._refs[name].indexOf(key.value), 0, dom);
     } else {
         target = [target];
-        target.splice(data._refs[name].indexOf(key.value), 0, dom);
+        target.splice(vm._refs[name].indexOf(key.value), 0, dom);
     }
 
-    data.$refs[name] = target;
+    vm.$refs[name] = target;
 }
 
-function removeRefs(data, dom) {
+function removeRefs(vm, dom) {
     let key, name;
 
     if (dom.attributes.hasOwnProperty("ref")) {
-        key = dom.attributes["data-key"];
+        key = dom.attributes["data-key"].nodeValue;
         name = dom.attributes["ref"].nodeValue;
 
-        if (data._refs[name].indexOf(key) < 0) {
-            data.$refs[name].splice(data.$refs[name].indexOf(dom), 1);
+        if (vm._refs[name].indexOf(key) < 0) {
+            vm.$refs[name].splice(vm.$refs[name].indexOf(dom), 1);
         }
     }
 }

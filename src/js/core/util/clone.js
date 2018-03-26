@@ -3,7 +3,6 @@ function clone(item) {
 
     var types = [ Number, String, Boolean ],
         result;
-
     // normalizing primitives if someone did new String('aaa'), or new Number('444');
     types.forEach(function(type) {
         if (item instanceof type) {
@@ -13,34 +12,13 @@ function clone(item) {
     if (typeof result == "undefined") {
         if (Object.prototype.toString.call( item ) === "[object Array]") {
             result = [];
-            item.forEach(function(child, index, array) {
+            item.forEach(function(child, index) {
                 result[index] = clone( child );
             });
         } else if (typeof item == "object") {
-            // testing that this is DOM
-            if (item.nodeType && typeof item.cloneNode == "function") {
-                var result = item.cloneNode( true );
-            } else if (!item.prototype) { // check that this is a literal
-                if (item instanceof Date) {
-                    result = new Date(item);
-                } else {
-                    // it is an object literal
-                    result = {};
-                    for (var i in item) {
-                        if (["parent", "next", "prev"].indexOf(i) < 0) {
-                            result[i] = clone(item[i]);
-                        }
-                    }
-                }
-            } else {
-                // depending what you would like here,
-                // just keep the reference, or create new object
-                if (false && item.constructor) {
-                    // would not advice to do that, reason? Read below
-                    result = new item.constructor();
-                } else {
-                    result = item;
-                }
+            result = isNode(item) ? (new vNode(item)) : {};
+            for (var i in item) {
+                result[i] = clone(item[i]);
             }
         } else {
             result = item;
@@ -48,6 +26,33 @@ function clone(item) {
     }
 
     return result;
+}
+
+function isNode(obj) {
+    let has = Object.prototype.hasOwnProperty;
+    return (has.call(obj, "content") || has.call(obj, "children")) &&
+            has.call(obj, "type") &&
+            has.call(obj, "attributes");
+}
+
+class vNode {
+    constructor(json) {
+        this.type = null;
+        this.content = null;
+        this.attributes = null;
+        this.el = null;
+        this.oberver = [];
+        this.key = null;
+        this.isComponent = false;
+        this.reference = json;
+    }
+    addSubs(fn) {
+        this.oberver.push(fn);
+    }
+    ready(el) {
+        this.el = el;
+        this.oberver.forEach(fn => fn(el));
+    }
 }
 
 export default clone;

@@ -9,14 +9,14 @@ function patch(oldGroup, newGroup) {
     let nkeyMap = {};
 
     oldGroup.forEach(el => {
-        let key = el.attributes ? el.attributes.find(el => el.key == "data-key").value : undefined;
+        let key = el.attributes ? Array.find(el.attributes, el => el.key == "data-key").value : undefined;
         if (key !== undefined) {
             okeyMap[key] = el;
             oldKeys.push(key);
         }
     });
     newGroup.forEach(el => {
-        let key = el.attributes ? el.attributes.find(el => el.key == "data-key").value : undefined;
+        let key = el.attributes ? Array.find(el.attributes, el => el.key == "data-key").value : undefined;
         if (key !== undefined) {
             nkeyMap[key] = el;
             newKeys.push(key);
@@ -37,39 +37,25 @@ function patch(oldGroup, newGroup) {
         });
     }
 
-    restKeys.forEach(key => {
-        let oldEl = okeyMap[key];
-        let newEl = nkeyMap[key];
-
-        if (oldEl == undefined || newEl == undefined) {
-            return;
-        }
-
-        let oldArStr = JSON.stringify(oldEl.attributes);
-        let newArStr = JSON.stringify(newEl.attributes);
-        // if (oldEl.event) {
-        //     patches.splice(0, 0, {
-        //         method: "event",
-        //         target: {oldEl, newEl},
-        //         index: oldGroup.indexOf(oldEl)
-        //     });
-        // }
-
-        if (oldArStr != newArStr) {
-            patches.splice(0, 0, {
-                method: "attr",
-                target: newEl,
-                index: oldGroup.indexOf(oldEl)
-            });
-        }
-        // } else if (oldEl.type == "text" && (oldEl.data != newEl.data)) {
-        //     patches.splice(0, 0, {
-        //         method: "text",
-        //         target: newEl,
-        //         index: oldGroup.indexOf(oldEl)
-        //     });
-        // }
-    });
+    // restKeys.forEach(key => {
+    //     let oldEl = okeyMap[key];
+    //     let newEl = nkeyMap[key];
+    //
+    //     if (oldEl == undefined || newEl == undefined) {
+    //         return;
+    //     }
+    //
+    //     let oldArStr = JSON.stringify(oldEl.attributes);
+    //     let newArStr = JSON.stringify(newEl.attributes);
+    //
+    //     if (oldArStr != newArStr) {
+    //         patches.splice(0, 0, {
+    //             method: "attr",
+    //             target: newEl,
+    //             index: oldGroup.indexOf(oldEl)
+    //         });
+    //     }
+    // });
 
     return {
         getPatches: () => {
