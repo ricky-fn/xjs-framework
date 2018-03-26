@@ -3,6 +3,9 @@ let unit = 'px';
 // let useRem = false;
 
 const templateFunction = (data) => {
+    if (data.sprites.length === 0) {
+        return "";
+    }
     let shared = `.icon { background-image: url(I); background-size: W${unit} H${unit}; background-repeat: no-repeat;}`
         .replace('I', data.sprites[0].image)
         .replace('W', data.sprites[0].total_width / _baseSize)

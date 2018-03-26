@@ -1,51 +1,68 @@
-import xjs from "./core/engine.js"
-import broadcast from "./core/broadcast.js"
-import router from "./router.js"
-import tool from "./plugin/tool.js"
-import {http, httpConfig} from "./api/http.js"
 import "../sass/app.scss"
-import mock from "./api/mock.js"
+import turbine from "./core/main"
+import router from "./router"
+// import mock from "./api/mock"
+import {http, httpConfig} from "./api/http"
+import "../images/favicon.ico"
 
-/**
- * 路由模块
- * @namespace xjs/router
- * @type {module#router}
- * @see module#router
- */
-xjs.router = router;
+httpConfig.successCode = 0;
+httpConfig.failCode = -1;
 
-/**
- * 框架内部的工具库
- * @method tool
- * @memberOf xjs
- * @see module:tool
- */
-xjs.tool = tool;
-
-/**
- * 挂载ajax模块
- * @method load
- * @memberOf xjs
- * @see module:load
- */
-const ajax = new http();
-
-xjs.$http = ajax.request.bind(ajax);
-
-/**
- * 挂在事件广播模块
- * @method broadcast
- * @memberOf xjs
- * @type {module:broadcast}
- * @see module:broadcast
- */
-xjs.broadcast = broadcast;
-
-$(() => {
-    /**
-     * 启动路由
-     * @method start
-     * @memberOf xjs/router
-     */
-    xjs.router.start();
+turbine.use({
+    install(turbine) {
+        let $http = new http();
+        turbine.http = turbine._turbine.$http = $http.request.bind($http);
+    }
 });
+
+let presentPage;
+let app = turbine({
+    el: "#app-view",
+    data: {
+        slide: false,
+        currentHash: window.location.hash
+    },
+    methods: {
+        ready() {
+            this.matchRoute();
+            // document.body.addEventListener("touchmove", e => {
+            //     if (this.slide) {
+            //         e.stopPropagation();
+            //     }
+            // })
+        },
+        matchRoute() {
+            let match = router[this.currentHash];
+            let div = document.createElement("div");
+            document.body.appendChild(div);
+
+            if (match == undefined) {
+                match = router["#home/"];
+            }
+
+            if (presentPage == match) {
+                return;
+            } else if (presentPage) {
+                presentPage.$hangup();
+            }
+
+            if (match instanceof turbine.prototype._init) {
+                match.$mount(div);
+            } else {
+                match = router[this.currentHash] = turbine(match).$mount(div);
+            }
+
+            presentPage = match;
+        }
+    },
+    watch: {
+        currentHash: function() {
+            this.matchRoute();
+            this.slide = false;
+        }
+    }
+});
+
+window.onhashchange = function() {
+    app.currentHash = window.location.hash;
+};

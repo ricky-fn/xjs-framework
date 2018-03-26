@@ -6,8 +6,12 @@ class Dep {
         this.subs.push(sub);
     }
     notify() {
+        let args = Array.prototype.slice.call(arguments, 1);
         this.subs.forEach(sub => {
-            sub.update();
+            if (sub != undefined) {
+                // sub.update.apply(sub, args);
+                sub.update(args[0], args[1]);
+            }
         });
     }
 }

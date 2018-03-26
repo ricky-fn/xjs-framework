@@ -9,16 +9,20 @@ module.exports = merge(config, {
                 test: /\.scss$/,
                 use: [
                     "style-loader",
-                    "css-loader",
-                    "sass-loader"
+                    "css-loader?sourceMap",
+                    "sass-loader?sourceMap"
                 ]
             }
         ]
     },
     devServer: {
         contentBase: filePaths.dev,
-        hot: true
+        hot: true,
+        proxy: {
+            "/api": "http://api.yihaoguanwang.com"
+        }
     },
+    devtool: 'inline-source-map',
     plugins: [
         // 支持热更新模块
         new webpack.NamedModulesPlugin(),

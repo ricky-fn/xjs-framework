@@ -1,139 +1,183 @@
-import {hooks, symbol} from "./analyse"
 import deepClone from "../util/clone"
-import comCnt from "../component/common"
+import {hooks, symbol} from "./analyse"
+import turbine from "../main"
+import {stringify} from "himalaya"
 
 class parseTemplate {
-    constructor(domTree, context, component) {
-        let vm = this.parse(deepClone(domTree), context, component);
+    constructor(domTree, context) {
+        let vm = this.parse(deepClone(domTree), context);
 
         return vm;
     }
-    parse(domTree, context, component) {
+    parse(domTree, context) {
+        let components = context._components;
+
         for (let index = 0; index < domTree.length; index++) {
-            let element = domTree[index];
-            if (element.type == "text") {
-                symbol(element, domTree, index, context);
-            } else if (element.type == "element") {
-                this.analyseHook(
-                    (add) => {
-                        index = add || index;
-                        return index;
-                    },
-                    element,
-                    domTree,
-                    context,
-                    component
-                );
+            let vNode = domTree[index];
+            if (vNode.type == "text") {
+                symbol(vNode, domTree, index, context);
+            } else if (vNode.type == "element") {
+
+                if (components != null && components.hasOwnProperty(vNode.tagName)) {
+                    vNode.isComponent = true;
+                    vNode.addSubs(node => {
+                        turbine(Object.assign({
+                            el: node
+                        }, components[vNode.tagName]));
+                    });
+                }
+
+                try {
+                    this.analyseHook(
+                        (add) => {
+                            index = add != undefined ? add : index;
+                            return index;
+                        },
+                        vNode,
+                        domTree,
+                        context
+                    );
+                } catch(e) {
+                    console.error(e + '\n\n', 'please check your template: \n' + stringify([vNode.reference]));
+                }
             }
         }
 
         return domTree;
     }
-    analyseHook(index, element, domTree, properties, priCnt) {
-        let {cntControl, component} = getComponent(element, priCnt, comCnt());
+    analyseHook(index, vNode, domTree, properties) {
         let recall = (domTree, prop) => {
-            if (component == undefined) {
-                this.parse(domTree || element.children, prop || properties, priCnt);
-            } else {
-                cntControl.init(component, prop, element);
+            if (vNode.isComponent != true) {
+                this.parse(domTree || vNode.children, prop || properties);
             }
         };
 
         let queue = new makeSequence(recall);
 
-        element.attributes.forEach(member => {
-            hooks.forEach(match => {
-                if (match.test.test(member.key)) {
-                    let attr = member;
+        vNode.attributes.forEach(member => {
+            matchHook(member, (match) => {
+                let attr = member,
+                    key = member.key,
+                    argIndex = key.indexOf(":");
 
-                    queue.push(match, {
-                        element,
-                        domTree,
-                        index,
-                        properties,
-                        cntControl,
-                        attr
-                    });
+                if (argIndex >= 0) {
+                    member.args = key.slice(argIndex + 1);
                 }
-            });
+
+                queue.push(match, {
+                    vNode,
+                    domTree,
+                    index,
+                    properties,
+                    attr
+                });
+            })
         });
 
         queue.process();
     }
 }
 
-function getComponent(element, priCnt, comCnt) {
-    let cntControl, component;
-    if (priCnt.match(element.name)) {
-        component = priCnt.match(element.name);
-        cntControl = priCnt;
-    } else if (comCnt.match(element.name)) {
-        component = comCnt.match(element.name);
-        cntControl = comCnt;
-    }
-
-    return {cntControl, component};
+function matchHook(attr, call) {
+    hooks.forEach(match => {
+        if (match.test.test(attr.key)) {
+            call(match);
+        }
+    });
 }
 
-function makeSequence(recall) {
-    let queue = [];
-    let flag = true;
-    let redirect = [null];
-    let copy = [];
+// function getComponent(element, priCnt, comCnt) {
+//     let cntControl, component;
+//     if (priCnt.match(element.name)) {
+//         component = priCnt.match(element.name);
+//         cntControl = priCnt;
+//     } else if (comCnt.match(element.name)) {
+//         component = comCnt.match(element.name);
+//         cntControl = comCnt;
+//     }
+//
+//     return {cntControl, component};
+// }
 
-    this.push = (member, args) => {
+class makeSequence {
+    constructor(recall) {
+        this.queue = [];
+        this.presentQueue = [];
+        this._flag = true;
+        this._rinx = 0;
+        this._cinx = 0;
+        this.copy = [];
+        this.recall = recall;
+    }
+    push(member, args) {
         let level = member.level;
-        if (queue[level] == undefined) {
-            queue[level] = [{
+        if (this.queue[level] == undefined) {
+            this.queue[level] = [{
                 handler: member.use,
                 args
             }];
         } else {
-            queue[level].push({
+            this.queue[level].push({
                 handler: member.use,
                 args
             });
         }
-    };
+    }
+    process() {
+        let redirect = [null];
+        let length = this.queue.length;
 
-    this.process = () => {
-        if (queue.length != 0) {
-            queue.forEach((group, cinx) => {
-                if (group === undefined) {
+        if (length === 0) {
+            return this.recall();
+        }
+        this.queue.forEach((group, cinx) => {
+            this._cinx = cinx;
+            this._rinx = group.length - 1;
+            this.presentQueue = group;
+
+            if (group === undefined) {
+                return;
+            }
+
+            this.presentQueue.forEach((target) => {
+                if (this._flag != true) {
                     return;
                 }
-
-                group.forEach((target, rinx) => {
-                    if (flag == true) {
-                        redirect.forEach(args => {
-                            let params = Object.assign(target.args, args);
-
-                            target.handler(params, (element, domTree, properties) => {
-                                copy.push({
-                                    element,
-                                    properties,
-                                    domTree
-                                });
-                                if (
-                                    flag == true &&
-                                    cinx == queue.length - 1 &&
-                                    rinx == group.length - 1
-                                ) {
-                                    recall(element.children, properties);
-                                }
-                            }, () => {
-                                flag = false;
-                            });
-                        });
-                        redirect = copy;
-                        copy = [];
-                    }
+                redirect.forEach(args => {
+                    let params = Object.assign(target.args, args);
+                    this.callHandler(target, params);
                 });
-            })
-        } else {
-            recall();
+
+                redirect = this.copy;
+                this.copy = [];
+            });
+        });
+    }
+    callHandler(target, params) {
+        target.handler(
+            params,
+            this.go.bind(this),
+            this.stop.bind(this)
+        );
+    }
+    go(vNode, domTree, properties) {
+        this._flag = true;
+        this.copy.push({
+            vNode,
+            properties,
+            domTree
+        });
+        if (
+            // this._flag == true &&
+            this._cinx == this.queue.length - 1 &&
+            this._rinx == this.presentQueue.length - 1
+        ) {
+            this.recall(vNode.children, properties);
         }
-    };
+    }
+    stop() {
+        this._flag = false;
+    }
 }
 
 export default parseTemplate

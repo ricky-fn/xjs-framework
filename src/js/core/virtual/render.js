@@ -14,29 +14,36 @@ function render(domTree, data) {
 
 function combine(domTree, fragment, data) {
     domTree.forEach(element => {
+        let el;
         if (element.type == "element") {
-            let dom = creatByTag(fragment, element, data);
+            let dom = el = creatByTag(fragment, element, data);
             combine(element.children, dom, data);
         } else if (element.type == "text") {
-            creatByText(fragment, element);
+            el = creatByText(fragment, element);
         } else if (element.type == "comment") {
-            creatByCommon(fragment, element);
+            el = creatByCommon(fragment, element);
         }
+
+        element.ready(el);
     });
 }
 
 function creatByCommon(fragment, element) {
     let common = document.createComment(element.content);
     fragment.appendChild(common);
+
+    return common;
 }
 
 function creatByText(fragment, element) {
     let text = document.createTextNode(element.content);
     fragment.appendChild(text);
 
-    if (element.model) {
-        element.model(text);
-    }
+    // if (element.model) {
+    //     element.model(text);
+    // }
+
+    return text;
 }
 
 function creatByTag(fragment, element, data) {
@@ -44,15 +51,7 @@ function creatByTag(fragment, element, data) {
 
     fragment.appendChild(setAttribs(dom, element.attributes));
 
-    if (element.event) {
-        element.event.addEventListener(dom);
-    }
-
-    if (element.model) {
-        element.model(dom);
-    }
-
-    if (element.attributes.find(el => el.key == "ref")) {
+    if (Array.find(element.attributes, el => el.key == "ref")) {
         refs.insertRefs(data, element, dom);
     }
 
