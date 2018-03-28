@@ -7,18 +7,16 @@ function addKey(tree) {
         } while (keys.indexOf(key) >= 0);
 
         keys.push(key);
-
-        obj = {key: "data-key", value: key};
-
-        if (vNode.type == "element" || vNode.type == "text") {
-            if (vNode.attributes) {
-                vNode.attributes.push(obj);
-            } else {
-                vNode.attributes = [obj];
-            }
-        } else if (el.type == "comment") {
-            vNode.attributes = [obj];
-        }
+        // if (vNode.type == "element" || vNode.type == "text") {
+        //     if (vNode.attributes) {
+        //         vNode.attributes.push(obj);
+        //     } else {
+        //         vNode.attributes = [obj];
+        //     }
+        // } else if (el.type == "comment") {
+        //     vNode.attributes = [obj];
+        // }
+        vNode.key = key;
 
         if (vNode.children) {
             addKey(vNode.children);

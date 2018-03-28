@@ -10,6 +10,9 @@ module.exports = merge(config, {
                 use: [
                     "style-loader",
                     "css-loader?sourceMap",
+                    { loader: 'postcss-loader', options: {
+                        sourceMap: true,
+                        config: {path: "./build/postcss.config.js"}} },
                     "sass-loader?sourceMap"
                 ]
             }

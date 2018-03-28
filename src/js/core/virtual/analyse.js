@@ -3,223 +3,205 @@ import watcher from "./watch"
 import watch from "../watch"
 import evalWithContext from "../util/eval"
 
-const hooks = [
+const directives = [
     {
-        test: /^v\-if$/,
-        use: ifOrder,
-        level: 0
-    },
-    {
-        test: /^v\-else$/,
-        use: elseOrder,
-        level: 0
-    },
-    {
-        test: /^v\-else\-if$/,
-        use: elseIfOrder,
-        level: 0
-    },
-    {
-        test: /^v\-for$/,
-        use: forOrder,
-        level: 0
-    },
-    {
-        test: /^v\-show$/,
-        use: showOrder,
-        level: 1
-    },
-    {
-        test: /^v\-on/,
-        use: eventOrder,
-        level: 1
-    },
-    {
-        test: /^v\-bind/,
-        use: bindOrder,
-        level: 1
-    },
-    {
-        test: /^v\-model$/,
-        use: modelOrder,
-        level: 1
-    },
-    {
-        test: /^ref$/,
-        use: refOrder,
-        level: 3
-    }
-];
+        directive: 'if$',
+        level: 0,
+        use: (params, insertQueue, stop) => {
 
-function modelOrder(params, go) {
-    let {vNode, domTree, properties, attr} = params;
-    let content = attr.value;
-    let inputType = vNode.tagName == "textarea" ? "text" : Array.find(vNode.attributes, el => el.key == "type").value;
+            let {domTree, index, binding} = params;
 
-    removeHook(vNode.attributes, attr.key);
-    vNode.addSubs((node) => {
-        new watcher(properties, content, (oldVal, newVal) => {
-            if (inputType == "radio") {
-                if (node.value == newVal) {
-                    node.checked = true;
-                } else {
-                    node.checked = false;
+            let _index = 0;
+            let nextSibling;
+
+            do {
+                _index += 1;
+                nextSibling = domTree[index() + _index];
+
+                if (
+                    nextSibling != undefined &&
+                    nextSibling.type == "element" &&
+                    (
+                        nextSibling.attributes.find(el => el.key == "v-else") ||
+                        nextSibling.attributes.find(el => el.key == "v-else-if")
+                    )
+                ) {
+                    nextSibling._if = binding.result;
                 }
-            } else if (inputType == "checkbox") {
-                if (newVal.indexOf(node.value) >= 0) {
-                    node.checked = true;
-                } else {
-                    node.checked = false;
-                }
-            } else {
-                node.value = newVal;
-            }
-        });
+            } while (nextSibling != undefined && nextSibling.type != "tag");
 
-        node.addEventListener('input', (e) => {
-            let data = evalWithContext(content, properties);
-            if (data != e.target.value) {
-                evalWithContext(content + '= "' + e.target.value + '"', properties);
-            }
-        });
-        node.addEventListener('change', (e) => {
-            let data = evalWithContext(content, properties);
-            if (inputType == "checkbox" && data instanceof Array) {
-                if (dom.checked == true) {
-                    data.push(dom.value);
-                } else {
-                    let index = data.indexOf(dom.value);
-                    data.splice(index, 1);
-                }
-            } else if (data != e.target.value) {
-                data = e.target.value;
-            }
-        });
-    });
-
-    go(vNode, domTree, properties);
-}
-
-function refOrder(params, go) {
-    let {vNode, domTree, attr, properties} = params;
-
-    let refs = properties._refs[attr.value];
-    let key = Array.find(vNode.attributes, el => el.key == "data-key").value;
-
-    if (refs == undefined) {
-        properties._refs[attr.value] = [key];
-    } else {
-        if (refs.indexOf(key) < 0) {
-            refs.push(key);
-        }
-    }
-    go(vNode, domTree, properties);
-}
-
-function elseIfOrder(params, go, stop) {
-    let {vNode, domTree, index, properties, attr} = params;
-    let content = attr.value;
-    let result = evalWithContext(content, properties);
-
-    removeHook(vNode.attributes, attr.key);
-
-    if (vNode.hasOwnProperty("_if")) {
-        if (vNode._if === true) {
-            editTree(domTree, index, 1);
-            stop();
-            result = true;
-        } else if (vNode._if === false) {
-            if (result) {
-                go(vNode, domTree, properties);
-            } else {
+            if (!binding.result) {
                 editTree(domTree, index, 1);
                 stop();
             }
         }
-    } else {
-        throw "cannot find a flag 'v-if' or 'v-else-if' in previous element";
-    }
+    },
+    {
+        directive: 'else$',
+        level: 0,
+        use: (params, insertQueue, stop) => {
+            let {vNode, domTree, index} = params;
 
-    let _index = 0;
-    let nextSibling;
-
-    do {
-        _index += 1;
-        nextSibling = domTree[index() + _index];
-
-        if (
-            nextSibling != undefined &&
-            nextSibling.type == "element" &&
-            (
-                nextSibling.attributes.find(el => el.key == "v-else") ||
-                nextSibling.attributes.find(el => el.key == "v-else-if")
-            )
-        ) {
-            nextSibling._if = result;
+            if (vNode.hasOwnProperty("_if")) {
+                if (vNode._if === true) {
+                    editTree(domTree, index, 1);
+                    stop();
+                }
+            } else {
+                throw "cannot find a flag 'v-if' in previous element";
+            }
         }
-    } while (nextSibling != undefined && nextSibling.type != "tag");
-}
+    },
+    {
+        directive: 'else\-if$',
+        level: 0,
+        use: (params, insertQueue, stop) => {
+            let {vNode, domTree, index, binding} = params;
+            let result = binding.result;
 
-function elseOrder(params, go, stop) {
-    let {vNode, domTree, index, properties, attr} = params;
+            if (vNode.hasOwnProperty("_if")) {
+                if (vNode._if === true) {
+                    editTree(domTree, index, 1);
+                    stop();
+                    result = true;
+                } else if (vNode._if === false) {
+                    if (!result) {
+                        editTree(domTree, index, 1);
+                        stop();
+                    }
+                }
+            } else {
+                throw "cannot find a flag 'v-if' or 'v-else-if' in previous element";
+            }
 
-    removeHook(vNode.attributes, attr.key);
+            let _index = 0;
+            let nextSibling;
 
-    if (vNode.hasOwnProperty("_if")) {
-        if (vNode._if === false) {
-            go(vNode, domTree, properties);
-        } else if (vNode._if === true) {
+            do {
+                _index += 1;
+                nextSibling = domTree[index() + _index];
+
+                if (
+                    nextSibling != undefined &&
+                    nextSibling.type == "element" &&
+                    (
+                        nextSibling.attributes.find(el => el.key == "v-else") ||
+                        nextSibling.attributes.find(el => el.key == "v-else-if")
+                    )
+                ) {
+                    nextSibling._if = result;
+                }
+            } while (nextSibling != undefined && nextSibling.type != "tag");
+        }
+    },
+    {
+        directive: 'for$',
+        level: 0,
+        preventDefaultVal: true,
+        use: (params, insertQueue, stop) => {
+            let {vNode, domTree, index, properties, binding} = params;
+            let code = binding.value;
+            let inner, counter, evalue, data, copy, key;
+            let _index = 0;
+
+            let args = code.split(" in ");
+            let mulArg = args[0].match(/^\(.*\)/g);
+            let content = trim(args[1]);
+
+            evalue = evalWithContext(content, properties);
+
+            if (mulArg != null && mulArg.length == 1) {
+                let params = mulArg[0].match(/[^(\(\)\,\s)][\w+]*/g);
+                inner = params[0];
+                counter = params[1];
+            } else {
+                inner = trim(args[0]);
+            }
+
+            if (typeof evalue == "number") {
+                evalue = ((num) => {
+                    let array = [];
+                    for (let i = 0; i < num; i++) {
+                        array.push(i);
+                    }
+                    return array;
+                })(evalue)
+            }
+
             editTree(domTree, index, 1);
-            stop();
+
+            for (key in evalue) {
+                copy = deepClone(vNode);
+                resetKey(copy, _index);
+                (data = {}) && (data[inner] = Number(key) === NaN ? key : Number(key));
+                let context = Object.create(properties);
+
+                (function(index) {
+                    let ob = new watch(context, data, null);
+                    let _w = new watcher(properties, copy, content, (oldVal, value) => {
+                        let key = Object.keys(value)[index];
+
+                        if (key === undefined) {
+                            return _w = ob = null;
+                        }
+
+                        context[inner] = value instanceof Array ? value[key] : key;
+                    });
+                })(_index);
+
+                if (mulArg != null && mulArg.length == 1) {
+                    context[counter] = _index;
+                }
+
+                _index += 1;
+                domTree.splice(index() + _index, 0, copy); // inserting clone object into domTree
+                insertQueue(copy, domTree, context);
+            }
+
+            resetIndex(index, _index); // set a new index of "for" statement, because domTree had been cloned
+
+            if (_index == 0) {
+                stop();
+            }
         }
-    } else {
-        throw "cannot find a flag 'v-if' in previous element";
-    }
-}
-
-function ifOrder(params, go, stop) {
-    let {vNode, domTree, index, properties, attr} = params;
-    let content = attr.value;
-    let val = evalWithContext(content, properties);
-
-    removeHook(vNode.attributes, attr.key);
-
-    let _index = 0;
-    let nextSibling;
-
-    do {
-        _index += 1;
-        nextSibling = domTree[index() + _index];
-
-        if (
-            nextSibling != undefined &&
-            nextSibling.type == "element" &&
-            (
-                nextSibling.attributes.find(el => el.key == "v-else") ||
-                nextSibling.attributes.find(el => el.key == "v-else-if")
-            )
-        ) {
-            nextSibling._if = val;
+    },
+    {
+        directive: 'show$',
+        level: 1,
+        update: (el, binding, vNode) => {
+            if (binding.result) {
+                el.style.display = "block";
+            } else {
+                el.style.display = "none";
+            }
         }
-    } while (nextSibling != undefined && nextSibling.type != "tag");
+    },
+    {
+        directive: 'on',
+        level: 1,
+        preventDefaultVal: true,
+        bind: (el, binding, vNode) => {
+            let context = Object.create(vNode.context);
+            binding.eventCall = (e) => {
+                if (/\((.*?)\)/.test(binding.value)) {
+                    context['$event'] = e;
+                }
+                return evalWithContext(binding.value, context);
+            };
 
-    if (val) {
-        go(vNode, domTree, properties);
-    } else {
-        editTree(domTree, index, 1);
-        stop();
-    }
-}
-
-function bindOrder(params, go, stop) {
-    let {attr, vNode, properties, domTree} = params;
-
-    removeHook(vNode.attributes, attr.key);
-
-    vNode.addSubs((dom) => {
-        new watcher(properties, vNode, attr.value, (oldVal, value) => {
+            el.addEventListener(binding.args, binding.eventCall);
+        },
+        unbind: (el, binding) => {
+            el.removeEventListener(binding.args, binding.eventCall);
+        }
+    },
+    {
+        directive: 'bind',
+        level: 1,
+        update: (el, binding, vNode, oldNode) => {
+            let value = binding.result;
             if (value !== null && typeof value == 'object' && value.toString() == '[object Object]') {
-                if (attr.args != undefined) {
+                if (binding.args != undefined) {
                     let str = "", val;
                     Object.keys(value).forEach(el => {
                         val = value[el];
@@ -230,133 +212,106 @@ function bindOrder(params, go, stop) {
                             str += `${el}: ${value[el]};`;
                         }
                     });
-                    setAttribute(vNode, dom, attr.args, str);
+                    setAttribute(vNode, el, binding.args, str);
                 } else {
-                    Object.keys(value).forEach(el => {
-                        setAttribute(vNode, dom, el, value[el]);
+                    Object.keys(value).forEach(key => {
+                        setAttribute(vNode, el, key, value[key]);
                     });
                 }
             } else if (value instanceof Array) {
-                setAttribute(vNode, dom, attr.args, value[0]);
+                setAttribute(vNode, el, binding.args, value[0]);
             } else {
-                setAttribute(vNode, dom, attr.args, value);
+                setAttribute(vNode, el, binding.args, value);
             }
-        });
-    });
-
-    go(vNode, domTree, properties);
-}
-
-function eventOrder(params, go, stop) {
-    let {attr, vNode, properties, domTree} = params;
-    let eventName = attr.key;
-    let eventCallName = attr.value;
-    let context = Object.create(properties);
-
-    removeHook(vNode.attributes, attr.key);
-
-    eventName = eventName.match(/([^v\-on:].*)/)[0];
-
-    vNode.addSubs(dom => {
-        dom.addEventListener(eventName, eventCall);
-    });
-
-    function eventCall(e) {
-        if (/\((.*?)\)/.test(eventCallName)) {
-            context['$event'] = e;
         }
-        return evalWithContext(eventCallName, context);
-    }
-
-    go(vNode, domTree, properties);
-}
-
-function showOrder(params, go, stop) {
-    let {vNode, properties, domTree, attr} = params;
-    let content = attr.value;
-
-    removeHook(vNode.attributes, attr.key);
-    vNode.addSubs(node => {
-        new watcher(properties, vNode, content, (oldVal, newVal) => {
-            if (newVal) {
-                node.style.display = "block";
-            } else {
-                node.style.display = "none";
-            }
-        })
-    });
-
-    go(vNode, domTree, properties);
-}
-
-function forOrder(params, go, stop) {
-    let {vNode, domTree, index, properties, attr} = params;
-    let code = attr.value;
-    let inner, counter, evalue, data, copy, key;
-    let _index = 0;
-
-    let args = code.split(" in ");
-    let mulArg = args[0].match(/^\(.*\)/g);
-    let content = trim(args[1]);
-
-    evalue = evalWithContext(content, properties);
-
-    removeHook(vNode.attributes, attr.key);
-    if (mulArg != null && mulArg.length == 1) {
-        let params = mulArg[0].match(/[^(\(\)\,\s)][\w+]*/g);
-        inner = params[0];
-        counter = params[1];
-    } else {
-        inner = trim(args[0]);
-    }
-
-    if (typeof evalue == "number") {
-        evalue = ((num) => {
-            let array = [];
-            for (let i = 0; i < num; i++) {
-                array.push(i);
-            }
-            return array;
-        })(evalue)
-    }
-
-    editTree(domTree, index, 1);
-
-    for (key in evalue) {
-        copy = deepClone(vNode);
-        resetKey(copy, _index);
-        (data = {}) && (data[inner] = Number(key) === NaN ? key : Number(key));
-        let context = Object.create(properties);
-
-        (function(index) {
-            let ob = new watch(context, data, null);
-            let _w = new watcher(properties, copy, content, (oldVal, value) => {
-                let key = Object.keys(value)[index];
-
-                if (key === undefined) {
-                    return _w = ob = null;
+    },
+    {
+        directive: 'model$',
+        level: 1,
+        bind: (el, binding, vNode) => {
+            let inputType = vNode.tagName == "textarea" ? "text" : Array.find(vNode.attributes, el => el.key == "type").value;
+            let content = binding.value;
+            el.addEventListener('input', (binding.inputEvent = (e) => {
+                let data = evalWithContext(content, vNode.context);
+                if (data != e.target.value) {
+                    evalWithContext(content + '= "' + e.target.value + '"', vNode.context);
                 }
+            }));
+            el.addEventListener('change', (binding.changeEvent = (e) => {
+                let data = evalWithContext(content, vNode.context);
+                if (inputType == "checkbox" && data instanceof Array) {
+                    if (el.checked == true) {
+                        data.push(el.value);
+                    } else {
+                        let index = data.indexOf(el.value);
+                        data.splice(index, 1);
+                    }
+                } else if (data != e.target.value) {
+                    data = e.target.value;
+                }
+            }));
+        },
+        update: (el, binding, vNode) => {
+            let inputType = vNode.tagName == "textarea" ? "text" : Array.find(vNode.attributes, el => el.key == "type").value;
 
-                context[inner] = value instanceof Array ? value[key] : key;
-            });
-        })(_index);
-
-        if (mulArg != null && mulArg.length == 1) {
-            context[counter] = _index;
+            if (inputType == "radio") {
+                if (el.value == binding.result) {
+                    el.checked = true;
+                } else {
+                    el.checked = false;
+                }
+            } else if (inputType == "checkbox") {
+                if (binding.result.indexOf(el.value) >= 0) {
+                    el.checked = true;
+                } else {
+                    el.checked = false;
+                }
+            } else {
+                el.value = binding.result;
+            }
+        },
+        unbind: (el, binding) => {
+            el.removeEventListener('input', binding.inputEvent);
+            el.removeEventListener('change', binding.changeEvent);
         }
+    },
+    {
+        directive: '^ref$',
+        level: 3,
+        display: true,
+        preventDefaultVal: true,
+        bind: (el, binding, vNode) => {
+            let context = vNode.context;
+            let {_refs, $refs} = context;
+            let _refObj = _refs[binding.value];
+            let $refObj = $refs[binding.value];
+            let key = vNode.key;
 
-        _index += 1;
-        domTree.splice(index() + _index, 0, copy); // inserting clone object into domTree
-        go(copy, domTree, context);
+            if (_refObj == undefined) {
+                _refs[binding.value] = [key];
+                $refs[binding.value] = el;
+            } else {
+                _refObj.push(key);
+                $refObj.push(el);
+            }
+        },
+        unbind: (el, binding, vNode) => {
+            let key = vNode.key,
+                name = binding.value,
+                {_refs, $refs} = vNode.context,
+                _refObj = _refs[name],
+                $refObj = $refs[name];
+
+            if ($refObj instanceof Array) {
+                $refObj.splice($refObj.indexOf(vNode.el), 1);
+                _refObj.splice(_refObj.indexOf(key), 1);
+            } else {
+                _refs[name] = undefined;
+                $refs[name] = undefined;
+            }
+        }
     }
-
-    resetIndex(index, _index); // set a new index of "for" statement, because domTree had been cloned
-
-    if (_index == 0) {
-        stop();
-    }
-
-}
+];
 
 function symbol(vNode, domTree, index, context) {
     let reg = vNode.content.match(/{{([^}}]*?)}}/g);
@@ -364,8 +319,7 @@ function symbol(vNode, domTree, index, context) {
     if (reg != null || reg != undefined) {
         reg.forEach(function(match) {
             let content = match.match(/[^{{}}]*/g)[2];
-
-            vNode.addSubs(node => {
+            vNode.inserted(node => {
                 new watcher(context, vNode, content, (oldVal, newVal) => {
                     let text = vNode.content;
                     let start = text.indexOf(match);
@@ -385,10 +339,13 @@ function editTree(domTree, index, count) {
 }
 
 function resetKey(vNode, index) {
-    let keyIndex = Array.findIndex(vNode.attributes, el => el.key == "data-key");
-    let keyVal = vNode.attributes[keyIndex];
+    let key = vNode.key;
+    key = parseInt(key, 16);
+    key += index;
+    key = key.toString(16);
 
-    return keyVal.value = keyPlus(keyVal.value, index);
+    vNode.key = key;
+    return key;
 }
 
 function resetIndex(index, math) {
@@ -410,27 +367,5 @@ function trim(str) {
     return str.replace(/\s/g, "");
 }
 
-function keyPlus(val, add) {
-    val = parseInt(val, 16);
-    val += add;
-    val = val.toString(16);
 
-    return val;
-}
-
-function removeHook(group, name) {
-    let index;
-    group.forEach((el, _index) => {
-        if (el.key == name) {
-            index = _index;
-        }
-    });
-
-    group.splice(index, 1);
-}
-
-
-export {
-    hooks,
-    symbol
-}
+export {directives, symbol};

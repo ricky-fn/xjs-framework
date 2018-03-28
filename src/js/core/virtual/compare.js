@@ -1,82 +1,59 @@
 import patch from "./patch"
 import render from "./render"
-import refs from "./refs"
 
-function compare(oldVM, newVm, parent, data) {
-    let patches = patch(oldVM, newVm);
+function compare(oldVM, newVM, parent, context) {
+    let patches = patch(oldVM, newVM);
     patches.getPatches().forEach(patch => {
-        applyPatch(patch, parent, data);
+        applyPatch(patch, parent, context);
     });
-    patches.getRestEl().forEach(team => {
-        let nextOT = team[0].children;
-        let nextNT = team[1].children;
-        let index = newVm.indexOf(team[1]);
+    patches.getRestEl().forEach(nodes => {
+        let {oldNode, newNode} = nodes;
+        let oldChild = oldNode.children;
+        let newChild = newNode.children;
+        let index = newVM.indexOf(newNode);
         let nextDom = parent.childNodes[index];
-        if (nextOT) {
-            compare(nextOT, nextNT, nextDom, data);
+
+        newNode.el = oldNode.el;
+        // newNode.isReady = oldNode.isReady;
+
+        newNode.directives.forEach(obj => {
+            obj.update && obj.update(newNode.el, obj.binding, newNode, oldNode);
+        });
+
+        if (oldChild) {
+            compare(oldChild, newChild, nextDom, context);
         }
     });
 }
 
-function applyPatch(patch, parent, data) {
+function applyPatch(patch, parent, context) {
     let target, child;
+    let {oldNode, newNode} = patch.target;
     switch (patch.method) {
         case "add":
-            child = render(patch.target, data);
+            child = render(newNode, context);
             parent.insertBefore(child, parent.childNodes[patch.index + 1]);
+
             break;
         case "delete":
-            target = parent.childNodes[patch.index];
-            let gather = target.querySelectorAll("[ref]");
+            // target = parent.childNodes[patch.index];
+            // let gather = target.querySelectorAll("[ref]");
+            //
+            // refs.removeRefs(context, target);
+            // Array.forEach(gather, target => {
+            //     refs.removeRefs(context, target);
+            // });
 
-            refs.removeRefs(data, target);
-            Array.forEach(gather, target => {
-                refs.removeRefs(data, target);
-            });
-
-            target.parentNode.removeChild(target);
+            oldNode.remove();
             break;
         case "replace":
+            console.warn("need to test");
             target = parent.childNodes[patch.index];
-            child = render(patch.target, data);
+            child = render(patch.target.newNode, context);
             target.remove();
 
             parent.insertBefore(child, parent.childNodes[patch.index]);
             break;
-        case "attr":
-            target = parent.childNodes[patch.index];
-            let attrs = patch.target.attributes;
-            attrs.forEach(attr => {
-                let prop = target.attributes[attr.key];
-                let nodeValue = prop ? prop.nodeValue : undefined;
-
-                if (nodeValue != attrs[name]) {
-                    target.setAttribute(attr.key, attr.value);
-                }
-            });
-
-            // if attribute has been removed from vm, it should be deleted from dom in here
-            for (let i = 0; i < target.attributes.length; i++) {
-                let name = target.attributes[i].name;
-                if (attrs.find(el => el.key == name) == undefined) {
-                    target.removeAttribute(name);
-                }
-            }
-            break;
-        case "text":
-            target = parent.childNodes[patch.index];
-            target.nodeValue = patch.target.data;
-            break;
-        case "model":
-            target = parent.childNodes[patch.index];
-            patch.target.model.update(target);
-            break;
-        // case "event":
-        //     let {oldEl, newEl} = patch.target;
-        //     let dom = parent.childNodes[patch.index];
-        //     oldEl.event.removeEventListener(dom);
-        //     newEl.event.addEventListener(dom);
-        //     break;
     }
 }
 

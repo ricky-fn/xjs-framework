@@ -30,9 +30,7 @@ function clone(item) {
 
 function isNode(obj) {
     let has = Object.prototype.hasOwnProperty;
-    return (has.call(obj, "content") || has.call(obj, "children")) &&
-            has.call(obj, "type") &&
-            has.call(obj, "attributes");
+    return (has.call(obj, "content") || has.call(obj, "children"));
 }
 
 class vNode {
@@ -42,16 +40,42 @@ class vNode {
         this.attributes = null;
         this.el = null;
         this.oberver = [];
+        this.children = [];
         this.key = null;
         this.isComponent = false;
+        this.isReady = false;
+        this.directives = [];
         this.reference = json;
+        this.context = null;
     }
-    addSubs(fn) {
+    inserted(fn) {
         this.oberver.push(fn);
     }
     ready(el) {
         this.el = el;
+        this.isReady = true;
         this.oberver.forEach(fn => fn(el));
+
+        this.directives.forEach(obj => {
+            if (obj.bind) {
+                obj.bind(this.el, obj.binding, this);
+            } else if (obj.update) {
+                obj.update(this.el, obj.binding, this);
+            }
+        });
+    }
+    remove() {
+        this.children.forEach(vNode => {
+            vNode.remove();
+        });
+
+        this.directives.forEach(obj => obj.unbind && obj.unbind(this.el, obj.binding, this));
+
+        this.el.parentNode.removeChild(this.el);
+        this.oberver = [];
+        this.el = null;
+        this.reference = null;
+        this.context = null;
     }
 }
 
