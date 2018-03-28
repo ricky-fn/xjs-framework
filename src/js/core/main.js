@@ -4,8 +4,10 @@ import render from "./virtual/render"
 import _parser from "./virtual/parse"
 import watch from "./watch"
 import watcher from "./virtual/watch"
-import Dep from "./virtual/dep"
 import compare from "./virtual/compare"
+import {directives} from "./virtual/analyse"
+
+const publicDirectives = [];
 
 function checkExistence(target, props, recall) {
     let keys = Object.keys(props);
@@ -36,7 +38,6 @@ let turbine = function(props) {
         vm._observe(vm, data);
     }
     vm._setMethods(vm, methods);
-    vm._vnode = parser(vm.$jsonTree, vm);
 
     if (typeof watch == "object") {
         let keys = Object.keys(watch);
@@ -54,16 +55,19 @@ let turbine = function(props) {
 };
 
 turbine.prototype = {
-    $el: null, //parent dom node, it could be a string or a dom object
-    $parentEl: null,
-    _refs: {},
-    $refs: {},
-    _continued: true, // to manage whether dom should be reRendered
-    $jsonTree: null,
-    _vnode: null, // to define JSON type of html tree
-    _components: null,
+    // $el: null, //parent dom node, it could be a string or a dom object
+    // _refs: {},
+    // $refs: {},
+    // _continued: true, // to manage whether dom should be reRendered
+    // $jsonTree: null,
+    // _vnode: null, // to define JSON type of html tree
+    // _components: null,
+    // _dir: [],
     _init(props) {
-        let {el, template, components} = props;
+        let {el, template, components, directives} = props;
+
+        this._refs = {};
+        this.$refs = {};
 
         if (el != undefined) {
             if (typeof el == "string") {
@@ -73,10 +77,24 @@ turbine.prototype = {
 
             this.$el = el;
             this.$jsonTree = parseHTML(template);
+            this._continued = true;
         } else if (template != undefined) {
             this.$jsonTree = parseHTML(template);
             this._continued = false;
         }
+
+        {
+            this._dir = [];
+            publicDirectives.forEach(directives => {
+                this._dir.push(directives);
+            });
+            if (directives instanceof Object) {
+                for (let key in directives) {
+                    turbine.directive(this, key, directives[key]);
+                }
+            }
+        }
+
         if (turbine._components || components) {
             this._components = Object.assign({}, components, turbine._components);
         }
@@ -85,9 +103,12 @@ turbine.prototype = {
     },
     _render(el, vm) {
         let parentNode = el.parentNode;
-        let domFragment = render(this._vnode, vm);
 
+        this._vnode = parser(this.$jsonTree, vm);
+
+        let domFragment = render(this._vnode);
         this.$el = domFragment.firstChild;
+
         parentNode.replaceChild(domFragment, el);
 
         if (typeof vm.ready == "function") {
@@ -145,11 +166,11 @@ turbine.prototype = {
         if (!this._continued) {
             return;
         }
-        this._refs = {};
+
         let oldVN = this._vnode;
         let newVN = this._vnode = parser(this.$jsonTree, vm);
 
-        compare(oldVN[0].children, newVN[0].children, vm.$el, vm);
+        compare(oldVN, newVN, {childNodes: [vm.$el]}, vm);
     }
 };
 
@@ -211,9 +232,10 @@ turbine.hangup = turbine._turbine.$hangup = function(vm) {
     if (this instanceof turbine._turbine._init) {
         this.beforeHangup && this.beforeHangup();
 
-        this.$refs = {};
+        // this.$refs = {};
         this._continued = false;
-        this.$el.parentNode.removeChild(this.$el);
+        this._vnode[0].remove();
+        this._vnode = null;
     } else if (vm instanceof turbine._turbine._init) {
         vm.$hangup();
     }
@@ -222,7 +244,7 @@ turbine.hangup = turbine._turbine.$hangup = function(vm) {
 turbine.restart = turbine._turbine.$restart = function(vm) {
     if (this instanceof turbine._turbine._init) {
         this._continued = true;
-        this._render(vm.$el, this);
+        this._render(vm.$el, vm);
     } else if (vm instanceof turbine._turbine._init) {
         vm.$restart(vm);
     }
@@ -250,5 +272,41 @@ turbine.component = function (tagName, props) {
 
     turbine._components[tagName] = props;
 };
+
+turbine.directive = function (_t, name, fn) {
+    let config = {};
+
+    if (arguments.length == 2) {
+        fn = name;
+        name = _t;
+        _t = null;
+    }
+
+    if (typeof fn == "function") {
+        config.bind = config.update = fn;
+    } else if (typeof fn === "object") {
+        config = fn;
+    } else {
+        throw("arguments error\n" + fn);
+    }
+
+    config.directive = name;
+
+    let _conf = Object.assign({
+        level: 4,
+        display: false,
+        preventDefaultVal: false
+    }, config);
+
+    if (_t === null) {
+        publicDirectives.push(_conf);
+    } else {
+        _t._dir.push(_conf);
+    }
+};
+
+directives.forEach(obj => {
+    turbine.directive(obj.directive, obj);
+});
 
 export default turbine;

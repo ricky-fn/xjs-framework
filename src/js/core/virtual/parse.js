@@ -1,13 +1,15 @@
 import deepClone from "../util/clone"
-import {hooks, symbol} from "./analyse"
+import {symbol} from "./analyse"
 import turbine from "../main"
 import {stringify} from "himalaya"
+import evalWithContext from "../util/eval";
 
 class parseTemplate {
     constructor(domTree, context) {
-        let vm = this.parse(deepClone(domTree), context);
+        this.directives = context._dir;
+        let nodeTree = this.parse(deepClone(domTree), context);
 
-        return vm;
+        return nodeTree;
     }
     parse(domTree, context) {
         let components = context._components;
@@ -20,7 +22,7 @@ class parseTemplate {
 
                 if (components != null && components.hasOwnProperty(vNode.tagName)) {
                     vNode.isComponent = true;
-                    vNode.addSubs(node => {
+                    vNode.inserted(node => {
                         turbine(Object.assign({
                             el: node
                         }, components[vNode.tagName]));
@@ -53,15 +55,19 @@ class parseTemplate {
         };
 
         let queue = new makeSequence(recall);
+        let attrs = vNode.attributes.concat();
 
-        vNode.attributes.forEach(member => {
-            matchHook(member, (match) => {
-                let attr = member,
-                    key = member.key,
+        attrs.forEach(binding => {
+            this.matchHook(binding, function(match) {
+                let key = binding.key,
                     argIndex = key.indexOf(":");
 
+                if (match.display === false) {
+                    removeHook(vNode.attributes, key);
+                }
+
                 if (argIndex >= 0) {
-                    member.args = key.slice(argIndex + 1);
+                    binding.args = key.slice(argIndex + 1);
                 }
 
                 queue.push(match, {
@@ -69,35 +75,24 @@ class parseTemplate {
                     domTree,
                     index,
                     properties,
-                    attr
+                    binding
                 });
             })
         });
 
         queue.process();
     }
+    matchHook(attr, call) {
+        this.directives.forEach(match => {
+            let directive = match.directive;
+            let prefix = directive.indexOf("^") < 0 ? '^v-' : '';
+            let reg = eval(`/${prefix + directive}/`);
+            if (reg.test(attr.key)) {
+                call(match);
+            }
+        });
+    }
 }
-
-function matchHook(attr, call) {
-    hooks.forEach(match => {
-        if (match.test.test(attr.key)) {
-            call(match);
-        }
-    });
-}
-
-// function getComponent(element, priCnt, comCnt) {
-//     let cntControl, component;
-//     if (priCnt.match(element.name)) {
-//         component = priCnt.match(element.name);
-//         cntControl = priCnt;
-//     } else if (comCnt.match(element.name)) {
-//         component = comCnt.match(element.name);
-//         cntControl = comCnt;
-//     }
-//
-//     return {cntControl, component};
-// }
 
 class makeSequence {
     constructor(recall) {
@@ -109,18 +104,12 @@ class makeSequence {
         this.copy = [];
         this.recall = recall;
     }
-    push(member, args) {
-        let level = member.level;
+    push(hook, args) {
+        let level = hook.level;
         if (this.queue[level] == undefined) {
-            this.queue[level] = [{
-                handler: member.use,
-                args
-            }];
+            this.queue[level] = [{hook, args}];
         } else {
-            this.queue[level].push({
-                handler: member.use,
-                args
-            });
+            this.queue[level].push({hook, args});
         }
     }
     process() {
@@ -132,52 +121,99 @@ class makeSequence {
         }
         this.queue.forEach((group, cinx) => {
             this._cinx = cinx;
-            this._rinx = group.length - 1;
             this.presentQueue = group;
+            this._rinx = 0;
 
             if (group === undefined) {
                 return;
             }
 
-            this.presentQueue.forEach((target) => {
+            this.presentQueue.forEach((target, rinx) => {
                 if (this._flag != true) {
                     return;
                 }
-                redirect.forEach(args => {
+                this._rinx = rinx;
+
+                redirect.forEach((args) => {
+                    let binding = target.args.binding = Object.assign({}, target.args.binding);
+
+                    let preventDefaultVal = target.hook.preventDefaultVal;
+                    if (preventDefaultVal !== true) {
+                        let context = args ? args.properties : target.args.properties;
+                        let content = binding.value;
+                        binding.result = evalWithContext(content, context);
+                    }
                     let params = Object.assign(target.args, args);
+                    let vNode = params.vNode;
+
                     this.callHandler(target, params);
+
+                    let hook = Object.create(target.hook);
+                    hook.binding = binding;
+                    vNode.directives.push(hook);
+                    vNode.context = params.properties;
                 });
 
-                redirect = this.copy;
+                redirect = this.copy.length === 0 ? redirect : this.copy;
                 this.copy = [];
             });
         });
     }
     callHandler(target, params) {
-        target.handler(
+        target.hook.use && target.hook.use(
             params,
-            this.go.bind(this),
+            this.insertQueue.bind(this),
             this.stop.bind(this)
         );
-    }
-    go(vNode, domTree, properties) {
-        this._flag = true;
-        this.copy.push({
-            vNode,
-            properties,
-            domTree
-        });
+
         if (
-            // this._flag == true &&
+            this._flag === true &&
             this._cinx == this.queue.length - 1 &&
             this._rinx == this.presentQueue.length - 1
         ) {
-            this.recall(vNode.children, properties);
+            if (this.copy.length > 0) {
+                this.copy.forEach(item => {
+                    this.recall(item.vNode.children, item.properties);
+                });
+            } else {
+                this.recall(params.vNode.children, params.properties);
+            }
         }
     }
+    insertQueue(vNode, domTree, properties) {
+        this._flag = true;
+        this.copy.push({
+            vNode, domTree, properties
+        });
+    }
+    // go(vNode, domTree, properties) {
+    //     this._flag = true;
+    //     this.copy.push({
+    //         vNode,
+    //         properties,
+    //         domTree
+    //     });
+    //     if (
+    //         this._cinx == this.queue.length - 1 &&
+    //         this._rinx == this.presentQueue.length - 1
+    //     ) {
+    //         this.recall(vNode.children, properties);
+    //     }
+    // }
     stop() {
         this._flag = false;
     }
+}
+
+function removeHook(group, name) {
+    let index;
+    group.forEach((el, _index) => {
+        if (el.key == name) {
+            index = _index;
+        }
+    });
+
+    group.splice(index, 1);
 }
 
 export default parseTemplate

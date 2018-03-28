@@ -9,14 +9,14 @@ function patch(oldGroup, newGroup) {
     let nkeyMap = {};
 
     oldGroup.forEach(el => {
-        let key = el.attributes ? Array.find(el.attributes, el => el.key == "data-key").value : undefined;
+        let key = el.key;
         if (key !== undefined) {
             okeyMap[key] = el;
             oldKeys.push(key);
         }
     });
     newGroup.forEach(el => {
-        let key = el.attributes ? Array.find(el.attributes, el => el.key == "data-key").value : undefined;
+        let key = el.key;
         if (key !== undefined) {
             nkeyMap[key] = el;
             newKeys.push(key);
@@ -29,32 +29,23 @@ function patch(oldGroup, newGroup) {
 
     if (patches.length > 0) {
         patches.forEach(cp => {
-            let index = restKeys.indexOf(cp.target);
+            let index = restKeys.indexOf(cp.target),
+                oldNode = okeyMap[cp.target],
+                newNode = nkeyMap[cp.target];
+
             if (index >= 0) {
                 restKeys.splice(index, 1);
             }
-            cp.target = okeyMap[cp.target] || nkeyMap[cp.target];
+
+            cp.target = {oldNode, newNode};
         });
     }
 
     // restKeys.forEach(key => {
-    //     let oldEl = okeyMap[key];
-    //     let newEl = nkeyMap[key];
+    //     let oldNode = okeyMap[key];
+    //     let newNode = nkeyMap[key];
     //
-    //     if (oldEl == undefined || newEl == undefined) {
-    //         return;
-    //     }
-    //
-    //     let oldArStr = JSON.stringify(oldEl.attributes);
-    //     let newArStr = JSON.stringify(newEl.attributes);
-    //
-    //     if (oldArStr != newArStr) {
-    //         patches.splice(0, 0, {
-    //             method: "attr",
-    //             target: newEl,
-    //             index: oldGroup.indexOf(oldEl)
-    //         });
-    //     }
+    //     newNode.el = oldNode.el;
     // });
 
     return {
@@ -64,7 +55,10 @@ function patch(oldGroup, newGroup) {
         getRestEl: () => {
             let array = [];
             restKeys.forEach(key => {
-                array.push([okeyMap[key], nkeyMap[key]]);
+                array.push({
+                    oldNode: okeyMap[key],
+                    newNode: nkeyMap[key]
+                });
             });
             return array;
         }

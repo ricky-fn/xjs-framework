@@ -1,59 +1,49 @@
-import refs from "./refs"
-
-function render(domTree, data) {
+function render(domTree) {
     let fragment = document.createDocumentFragment();
 
     if (!isArray(domTree)) {
         domTree = [domTree];
     }
 
-    combine(domTree, fragment, data);
+    combine(domTree, fragment);
 
     return fragment;
 }
 
-function combine(domTree, fragment, data) {
-    domTree.forEach(element => {
+function combine(domTree, fragment) {
+    domTree.forEach(vNode => {
         let el;
-        if (element.type == "element") {
-            let dom = el = creatByTag(fragment, element, data);
-            combine(element.children, dom, data);
-        } else if (element.type == "text") {
-            el = creatByText(fragment, element);
-        } else if (element.type == "comment") {
-            el = creatByCommon(fragment, element);
+        if (vNode.type == "element") {
+            let dom = el = creatByTag(fragment, vNode);
+            combine(vNode.children, dom);
+        } else if (vNode.type == "text") {
+            el = creatByText(fragment, vNode);
+        } else if (vNode.type == "comment") {
+            el = creatByCommon(fragment, vNode);
         }
 
-        element.ready(el);
+        vNode.ready(el);
     });
 }
 
-function creatByCommon(fragment, element) {
-    let common = document.createComment(element.content);
+function creatByCommon(fragment, vNode) {
+    let common = document.createComment(vNode.content);
     fragment.appendChild(common);
 
     return common;
 }
 
-function creatByText(fragment, element) {
-    let text = document.createTextNode(element.content);
+function creatByText(fragment, vNode) {
+    let text = document.createTextNode(vNode.content);
     fragment.appendChild(text);
-
-    // if (element.model) {
-    //     element.model(text);
-    // }
 
     return text;
 }
 
-function creatByTag(fragment, element, data) {
-    let dom = document.createElement(element.tagName);
+function creatByTag(fragment, vNode) {
+    let dom = document.createElement(vNode.tagName);
 
-    fragment.appendChild(setAttribs(dom, element.attributes));
-
-    if (Array.find(element.attributes, el => el.key == "ref")) {
-        refs.insertRefs(data, element, dom);
-    }
+    fragment.appendChild(setAttribs(dom, vNode.attributes));
 
     return dom;
 }
