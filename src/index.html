@@ -1,13 +1,20 @@
 <!DOCTYPE html>
-<html lang="zh-cmn-Hans">
+<html>
 <head>
-    <title>xjs javascript framework</title>
-    <meta charset="utf-8">
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <!--<meta name="keywords" content="<%= htmlWebpackPlugin.options.keyword %>">-->
+    <!--<meta name="description" content="<%= htmlWebpackPlugin.options.description %>">-->
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
     <meta name="renderer" content="webkit">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="yes" name="apple-touch-fullscreen">
+    <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no,email=no" name="format-detection">
     <meta content="fullscreen=yes,preventMove=no" name="ML-Config">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-title" content="yhz">
     <script>
         (function (doc, win) {
             var docEl = doc.documentElement;
@@ -21,7 +28,7 @@
             var recalc = function () {
                 var clientWidth = docEl.clientWidth;
                 if (!clientWidth) return;
-                var fontSize = 100 * (clientWidth / 720);
+                var fontSize = 100 * (clientWidth / 750);
                 stylePush.innerHTML = styles + "html { font-size: " + fontSize + 'px !important}';
             };
 
@@ -33,7 +40,34 @@
 </head>
 <body>
     <div id="app-view">
-        <div v-for="i in array">{{i}}</div>
+        <header>
+            <div class="container">
+                <a href="#home/" class="logo"></a>
+                <div class="menu-wrapper">
+                    <i class="icon icon-menu" v-on:click="slide = true;"></i>
+                </div>
+            </div>
+            <div class="slide-module" v-bind:class="{moveIn: slide}" v-on:click="slide = false;">
+                <i class="icon icon-close"></i>
+                <div class="middle">
+                    <a href="#home/" v-bind:class="{active: currentHash === '#home/'}">首页</a>
+                    <a href="#report/" v-bind:class="{active: currentHash === '#report/'}">品牌报道</a>
+                    <a href="#activity/" v-bind:class="{active: currentHash === '#activity/'}">热门活动</a>
+                    <a href="#lotteries/" v-bind:class="{active: currentHash === '#lotteries/'}">游戏介绍</a>
+                    <a href="#benefit/" v-bind:class="{active: currentHash === '#benefit/'}">公益事业</a>
+                    <a href="#contact/" v-bind:class="{active: currentHash === '#contact/'}">关于我们</a>
+                </div>
+            </div>
+        </header>
     </div>
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?19d6be84219d76fcefc51094a5107113";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
 </body>
 </html>

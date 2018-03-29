@@ -14,15 +14,18 @@ function combine(domTree, fragment) {
     domTree.forEach(vNode => {
         let el;
         if (vNode.type == "element") {
-            let dom = el = creatByTag(fragment, vNode);
-            combine(vNode.children, dom);
-        } else if (vNode.type == "text") {
-            el = creatByText(fragment, vNode);
-        } else if (vNode.type == "comment") {
-            el = creatByCommon(fragment, vNode);
-        }
+            el = creatByTag(fragment, vNode);
+            vNode.ready(el);
 
-        vNode.ready(el);
+            combine(vNode.children, el);
+        } else {
+            if (vNode.type == "text") {
+                el = creatByText(fragment, vNode);
+            } else if (vNode.type == "comment") {
+                el = creatByCommon(fragment, vNode);
+            }
+            vNode.ready(el);
+        }
     });
 }
 
