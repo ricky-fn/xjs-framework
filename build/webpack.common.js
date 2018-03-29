@@ -59,10 +59,8 @@ const config = {
     plugins: [
         // 自动生成index.html
         new HtmlWebpackPlugin({
-            title: "一号站品牌官网欢迎您",
-            keyword: "一号站,一号站官网",
-            description: "一号站品牌官网,是一号站娱乐倾力打造的品牌推广平台,公司前身是菲律宾第一游戏平台多宝，一号站平台自2003年成立以来就获得了当地政府颁发的CEZA牌照。平台资金实力雄厚，广大玩家可以放心娱乐！",
-            favicon: filePaths.images + "favicon.ico",
+            title: "turbine mvvm js framework",
+            // favicon: filePaths.images + "favicon.ico",
             template: filePaths.dev + 'index.html',
             hash: true,
             inject: true,

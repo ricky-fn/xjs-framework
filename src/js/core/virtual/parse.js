@@ -138,7 +138,8 @@ class makeSequence {
                     let binding = target.args.binding = Object.assign({}, target.args.binding);
 
                     let preventDefaultVal = target.hook.preventDefaultVal;
-                    if (preventDefaultVal !== true) {
+
+                    if (preventDefaultVal !== true && binding.value != null) {
                         let context = args ? args.properties : target.args.properties;
                         let content = binding.value;
                         binding.result = evalWithContext(content, context);
