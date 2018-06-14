@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/a2604882741z/xjs-framework#readme",
   "devDependencies": {
+    "@a2604882741z/turbine": "^1.1.4",
     "@babel/core": "^7.0.0-beta.42",
     "@babel/plugin-transform-runtime": "^7.0.0-beta.42",
     "@babel/polyfill": "^7.0.0-beta.42",
@@ -55,6 +56,7 @@
     "@babel/runtime": "^7.0.0-beta.42",
     "babel-loader": "^8.0.0-beta.2",
     "html-loader": "^0.5.5",
+    "turbine-validation": "^1.0.3",
     "webpack-dev-server": "^2.9.7"
   },
   "browserslist": [
