@@ -157,7 +157,7 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
         doms = Array.prototype.slice.call(doms);
         if (this.$domNode.data('xjs-event')) doms.push(this.domNode);
         for (i = 0; i < doms.length; i++) {
-            var fns = {}, f, j;
+            var f, j;
             dom = $(doms[i]);
             parents = dom.parents('[data-xjs-mixin]');
 
@@ -168,7 +168,13 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             f = n.replace(/\s/g, "").split(';').slice(0, -1);
             for (j = 0; j < f.length; j++) {
                 var event = f[j].split(':');
-                dom.on(event[0], this[event[1]].bind(this));
+                var ename = event[0];
+                var efn = this[event[1]];
+                if (efn == undefined) {
+                    console.warn(event[1] + ' event is not exist on this page');
+                } else {
+                    dom.on(ename, efn.bind(this));
+                }
             }
         }
         return true;
@@ -182,8 +188,8 @@ define('widget', ['engine', 'underscore', 'zepto'], function (xjs, _, $) {
             if (!param[i].hasOwnProperty('showShadow')) param[i].showShadow = true;
             delete param[i].app;
 
-            xjs.load(param[i]).then(function(key, result) {
-                this.data[key] = reslut;
+            xjs.load(param[i]).then(function (key, result) {
+                this.data[key] = result;
                 count += 1;
                 if (count == param.length) dtd.resolve();
             }.bind(this, name));

@@ -106,8 +106,11 @@ define('engine', ['zepto', 'underscore'], function ($, _) {
      * @param {Object} prop Page类的方法
      * @see widget
      */
-    xjs.declare = function (classname, parents, prop) {
-        return _class[classname] = mixinProp(parents, prop);
+    xjs.declare = function (className, parents, prop) {
+       if (xjs.getDeclare(className) !== undefined)
+           throw "this className has been declared already";
+
+        return _class[className] = mixinProp(parents, prop);
     };
 
     /**

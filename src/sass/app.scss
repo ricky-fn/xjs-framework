@@ -1,7 +1,6 @@
 @import "reset";
 @import "common";
 @import "animation";
-@import "sprite";
 
 .app-view {
   position: relative;
@@ -13,3 +12,6 @@
 .app-content {
   background: #000;
 }
+
+// 首页
+@import 'Page.Home';

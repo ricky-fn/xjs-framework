@@ -1,10 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-    <title><%= htmlWebpackPlugin.options.title %></title>
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-    <!--<meta name="keywords" content="<%= htmlWebpackPlugin.options.keyword %>">-->
-    <!--<meta name="description" content="<%= htmlWebpackPlugin.options.description %>">-->
+    <title>xjs-framework</title>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
     <meta name="renderer" content="webkit">
     <meta content="yes" name="apple-mobile-web-app-capable">
@@ -12,11 +10,17 @@
     <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style">
     <meta content="telephone=no,email=no" name="format-detection">
     <meta content="fullscreen=yes,preventMove=no" name="ML-Config">
-    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <meta name="apple-mobile-web-app-title" content="yhz">
+    <meta name="apple-mobile-web-app-title" content="XBET">
+    <link rel="apple-touch-icon" href="assets/images/icon.png"/>
+    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <link rel="bookmark" href="favicon.ico"/>
+    <script data-main="assets/js/main.js" src="assets/js/lib/require.js"></script>
     <script>
         (function (doc, win) {
+
             var docEl = doc.documentElement;
             var stylePush = document.createElement('style');
             var resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize';
@@ -24,12 +28,17 @@
             stylePush.id = 'remSet';
             document.head.appendChild(stylePush);
 
+            // 如果是UC浏览器禁止全局动画效果
+            // if (navigator.userAgent.indexOf('UCBrowser') > 0) {
+            //   styles = '* {-webkit-transition: none !important; transition: none !important;}\n';
+            // }
+
             // 计算font-size实现自动缩放
             var recalc = function () {
                 var clientWidth = docEl.clientWidth;
                 if (!clientWidth) return;
-                var fontSize = 100 * (clientWidth / 750);
-                stylePush.innerHTML = styles + "html { font-size: " + fontSize + 'px !important}';
+                var fontSize = (clientWidth / 700 * 40).toFixed(1);
+                stylePush.innerHTML = styles + "html { font-size: " + (fontSize > 25 ? 25 : fontSize) + 'px}';
             };
 
             if (!doc.addEventListener) return;
@@ -39,35 +48,6 @@
     </script>
 </head>
 <body>
-    <div id="app-view">
-        <header>
-            <div class="container">
-                <a href="#home/" class="logo"></a>
-                <div class="menu-wrapper">
-                    <i class="icon icon-menu" v-on:click="slide = true;"></i>
-                </div>
-            </div>
-            <div class="slide-module" v-bind:class="{moveIn: slide}" v-on:click="slide = false;">
-                <i class="icon icon-close"></i>
-                <div class="middle">
-                    <a href="#home/" v-bind:class="{active: currentHash === '#home/'}">首页</a>
-                    <a href="#report/" v-bind:class="{active: currentHash === '#report/'}">品牌报道</a>
-                    <a href="#activity/" v-bind:class="{active: currentHash === '#activity/'}">热门活动</a>
-                    <a href="#lotteries/" v-bind:class="{active: currentHash === '#lotteries/'}">游戏介绍</a>
-                    <a href="#benefit/" v-bind:class="{active: currentHash === '#benefit/'}">公益事业</a>
-                    <a href="#contact/" v-bind:class="{active: currentHash === '#contact/'}">关于我们</a>
-                </div>
-            </div>
-        </header>
-    </div>
-    <script>
-        var _hmt = _hmt || [];
-        (function() {
-            var hm = document.createElement("script");
-            hm.src = "https://hm.baidu.com/hm.js?19d6be84219d76fcefc51094a5107113";
-            var s = document.getElementsByTagName("script")[0];
-            s.parentNode.insertBefore(hm, s);
-        })();
-    </script>
+<div class="app-view scroll-container" id="appview"></div>
 </body>
 </html>

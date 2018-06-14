@@ -1,5 +1,7 @@
+/src/sass/_sprites.scss
+
 /node_modules
 
-/dist
+/dev
 
 /.idea

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Home - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-load.html">load</a></li><li><a href="module-route.html">route</a><ul class='methods'><li data-type='method'><a href="module-route.html#.checkMatchResult">checkMatchResult</a></li><li data-type='method'><a href="module-route.html#.define">define</a></li><li data-type='method'><a href="module-route.html#.excludeAbandonModules">excludeAbandonModules</a></li><li data-type='method'><a href="module-route.html#.getAuthorization">getAuthorization</a></li><li data-type='method'><a href="module-route.html#.navigator">navigator</a></li><li data-type='method'><a href="module-route.html#.setup">setup</a></li><li data-type='method'><a href="module-route.html#.start">start</a></li><li data-type='method'><a href="module-route.html#.verify">verify</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="xjs.html">xjs</a><ul class='methods'><li data-type='method'><a href="xjs.html#.addAnnounceEvent">addAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.byId">byId</a></li><li data-type='method'><a href="xjs.html#.createView">createView</a></li><li data-type='method'><a href="xjs.html#.declare">declare</a></li><li data-type='method'><a href="xjs.html#.destroyView">destroyView</a></li><li data-type='method'><a href="xjs.html#.getUserInfo">getUserInfo</a></li><li data-type='method'><a href="xjs.html#.load">load</a></li><li data-type='method'><a href="xjs.html#.removeAnnounceEvent">removeAnnounceEvent</a></li><li data-type='method'><a href="xjs.html#.setUserInfo">setUserInfo</a></li><li data-type='method'><a href="xjs.html#.tool">tool</a></li><li data-type='method'><a href="xjs.html#.triggerAnounceEvent">triggerAnounceEvent</a></li></ul></li><li><a href="xjs_router.html">xjs/router</a><ul class='methods'><li data-type='method'><a href="xjs_router.html#.define">define</a></li><li data-type='method'><a href="xjs_router.html#.navigator">navigator</a></li><li data-type='method'><a href="xjs_router.html#.setup">setup</a></li><li data-type='method'><a href="xjs_router.html#.start">start</a></li></ul></li></ul><h3>Mixins</h3><ul><li><a href="widget.html">widget</a><ul class='members'><li data-type='member'><a href="widget.html#.baseClass">baseClass</a></li><li data-type='member'><a href="widget.html#.id">id</a></li><li data-type='member'><a href="widget.html#.templateString">templateString</a></li><li data-type='member'><a href="widget.html#.title">title</a></li></ul><ul class='methods'><li data-type='method'><a href="widget.html#.buildRender">buildRender</a></li><li data-type='method'><a href="widget.html#.init">init</a></li><li data-type='method'><a href="widget.html#.onExit">onExit</a></li><li data-type='method'><a href="widget.html#.request">request</a></li><li data-type='method'><a href="widget.html#.startup">startup</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+
+
+
+
+
+
+
+    
+
+
+    <section class="readme">
+        <article><h3>版本号：1.0.0</h3><h3>简介：</h3><p>个人使用前端开发集成框架，集成了单页应用框架以及前端项目自动构建工具，适用于中小型项目的快速开发。</p>
+<h3>API文档：</h3><p>文档根据jsdoc的规则编写，请执行<a href="https://github.com/a2604882741z/xjs-framework/tree/master/docs">docs/index.html</a>获取api信息。
+当更新了js备注后，在命令行里执行下面的命令更新文档。</p>
+<pre class="prettyprint source lang-javascript"><code>gulp editAPI</code></pre><h3>目录分类：</h3><pre class="prettyprint source"><code>dev/ 前端自动构建工具生成文件夹，存储编译过后的文件
+src/ 前端资源文件夹
+    icons/ 图标
+    images/ 公用图片
+    pages/ html模板
+    sass/ CSS
+    js/ 脚本
+        lib/ 底层依赖插件
+        plugin/ 业务插件
+        core/ 核心模块
+            engine.js 底层框架核心
+            route.js 路由模块
+            watch.js 数据监听模块
+            widget.js Model基类
+        app.js 项目入口文件
+        router.js 路由定义模块</code></pre><h3>前端开发环境配置：</h3><ol>
+<li>安装Nodejs</li>
+<li>在当前路径下，在命令行里执行<code>npm install</code>载入依赖包再执行<code>npm install -g gulp</code></li>
+<li>在命令行里执行：<pre class="prettyprint source lang-javascript"><code>gulp //开始工作</code></pre></li>
+<li>开发结束后执行一下命令，并从dev目录里获取发布版本<pre class="prettyprint source lang-javascript"><code>gulp release //发布线上版本</code></pre></li>
+</ol>
+<h3>任何疑问:</h3><p>QQ: 3427495853<br>
+mail: mr.jiangxue@hotmail.com</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Oct 09 2017 15:16:48 GMT+0800 (China Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
