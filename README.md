@@ -4,11 +4,7 @@
 个人使用前端开发集成框架，集成了单页应用框架以及前端项目自动构建工具，适用于中小型项目的快速开发。
 
 ### API文档：
-文档根据jsdoc的规则编写，请执行[docs/index.html](https://github.com/a2604882741z/xjs-framework/tree/master/docs)获取api信息。
-当更新了js备注后，在命令行里执行下面的命令更新文档。
-```javascript
-gulp editAPI
-```
+[link](https://a2604882741z.github.io/xjs-framework/)
 
 ### 目录分类：
 	dev/ 前端自动构建工具生成文件夹，存储编译过后的文件
