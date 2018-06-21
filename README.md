@@ -37,5 +37,4 @@ gulp release //发布线上版本
 ```
 
 ### 任何疑问:
-QQ: 3427495853<br>
 mail: mr.jiangxue@hotmail.com
