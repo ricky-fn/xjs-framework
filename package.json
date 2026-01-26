@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "gulp": "^3.8.11",
+    "gulp": "^5.0.1",
     "gulp-cache": "^0.4.5",
     "gulp-clean": "^0.3.1",
     "gulp-concat": "^2.5.2",
@@ -21,7 +21,7 @@
     "through2": "^0.6.5"
   },
   "dependencies": {
-    "browser-sync": "^2.11.2",
+    "browser-sync": "^2.29.3",
     "docdash": "^0.4.0",
     "gulp-jsdoc3": "^1.0.1",
     "node-sass": "^4.5.3"
